@@ -162,10 +162,6 @@ struct SettingsView: View {
                 testButton(title: "Wrong", color: gameState.currentTheme.wrongColor) {
                     gameState.audioManager.playSound(.wrong)
                 }
-
-                testButton(title: "Buff", color: Color(red: 0.9, green: 0.75, blue: 0.2)) {
-                    gameState.audioManager.playSound(.buffSelect)
-                }
             }
         }
     }

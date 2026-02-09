@@ -2,14 +2,14 @@
 //  GameView.swift
 //  mathgame
 //
-//  Main gameplay view
+//  Blackjack card counting gameplay view
 //
 
 import SwiftUI
 
 struct GameView: View {
     @State private var gameState = GameState.shared
-    @State private var selectedAnswer: GameSession.AnswerOption?
+    @State private var selectedAnswer: BlackjackSession.AnswerOption?
     @State private var showFeedback = false
     @State private var feedbackText = ""
     @State private var feedbackColor: Color = .green
@@ -27,27 +27,32 @@ struct GameView: View {
                 headerSection
 
                 // Timer bar
-                if let session = gameState.session, session.mode.hasTimer {
-                    TimerBar(progress: timerProgress)
-                        .padding(.horizontal)
-                        .accessibilityLabel("Time remaining")
-                        .accessibilityValue("\(Int(session.timeRemaining)) seconds")
-                }
+                TimerBar(progress: timerProgress)
+                    .padding(.horizontal)
+                    .accessibilityElement()
+                    .accessibilityLabel("Time remaining")
+                    .accessibilityValue("\(Int(gameState.session?.timeRemaining ?? 0)) seconds")
 
-                // Question
-                questionSection
+                // Cards display
+                cardsSection
 
-                // Feedback (always takes space to prevent layout shift)
+                // Prompt
+                Text("What's the total?")
+                    .font(.headline)
+                    .foregroundStyle(gameState.currentTheme.textColor)
+
+                // Feedback
                 Text(feedbackText)
                     .font(.title.bold())
                     .foregroundStyle(feedbackColor)
                     .opacity(showFeedback ? 1 : 0)
+                    .frame(height: 40)
 
                 // Answer buttons
                 answerButtonsSection
-                    .padding(.top, 20)
+                    .padding(.top, 8)
 
-                // Pause and Mute controls
+                // Controls
                 controlsSection
 
                 Spacer()
@@ -106,19 +111,17 @@ struct GameView: View {
     private var headerSection: some View {
         HStack {
             // Mode indicator
-            Text(gameState.session?.mode.rawValue ?? "")
+            Text("Blackjack")
                 .font(.caption.bold())
-                .foregroundStyle(modeColor)
+                .foregroundStyle(Color(red: 0.2, green: 0.6, blue: 0.3))
 
             Spacer()
 
-            // Health (if applicable)
-            if gameState.session?.mode.hasHealth == true {
+            // Health
+            if gameState.player.health > 0 {
                 HealthIndicator(
                     current: gameState.player.health,
-                    max: 3 + gameState.player.activeBuffs
-                        .filter { $0.buff.id == "extra_health" }
-                        .reduce(0) { $0 + $1.remainingUses }
+                    max: 3
                 )
             }
 
@@ -130,42 +133,54 @@ struct GameView: View {
         .padding(.horizontal)
     }
 
-    private var modeColor: Color {
-        switch gameState.session?.mode {
-        case .practice:
-            return .green
-        case .hard:
-            return .red
-        case .blackjack:
-            return Color(red: 0.2, green: 0.6, blue: 0.3)
-        default:
-            return .primary
-        }
-    }
-
     private var timerProgress: Double {
         guard let session = gameState.session else { return 1.0 }
         return max(0, min(1, session.timeRemaining / session.timeLimit))
     }
 
-    private var questionSection: some View {
-        VStack(spacing: 20) {
-            // Boss battle indicator
-            if gameState.session?.isBossBattle == true {
-                Text("⚔️ BOSS BATTLE ⚔️")
-                    .font(.headline.bold())
-                    .foregroundStyle(.purple)
+    private var cardsSection: some View {
+        VStack(spacing: 8) {
+            // Cards display
+            HStack(spacing: -25) {
+                if let session = gameState.session {
+                    ForEach(session.currentCards) { card in
+                        PlayingCardView(card: card)
+                            .transition(.asymmetric(
+                                insertion: .offset(x: 50).combined(with: .opacity),
+                                removal: .opacity
+                            ))
+                    }
+                }
             }
+            .frame(height: 110)
+            .padding(.horizontal, 30)
+            .padding(.vertical, 10)
 
-            // Question text
-            if let question = gameState.session?.currentQuestion {
-                Text(question.text)
-                    .font(.system(size: 72, weight: .bold, design: .rounded))
-                    .foregroundStyle(gameState.currentTheme.textColor)
-                    .minimumScaleFactor(0.5)
+            // Show current hand value with soft/hard/bust indicator
+            if let session = gameState.session {
+                let handValue = session.handValue
+                Text(handValue.displayText)
+                    .font(.caption.bold())
+                    .foregroundStyle(
+                        handValue.isBust ? .red :
+                        (handValue.isSoft ? Color(red: 0.2, green: 0.8, blue: 0.3) : gameState.currentTheme.textColor)
+                    )
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(gameState.currentTheme.bgColor.opacity(0.8))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(
+                                handValue.isBust ? Color.red.opacity(0.5) :
+                                (handValue.isSoft ? Color.green.opacity(0.5) : Color.clear),
+                                lineWidth: 1
+                            )
+                    )
             }
         }
-        .frame(maxWidth: .infinity)
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -183,13 +198,12 @@ struct GameView: View {
             GridItem(.flexible())
         ]
 
-        let isTimerExpired = gameState.session?.mode.hasTimer == true &&
-                            gameState.session?.timeRemaining ?? 1 <= 0
+        let isTimerExpired = gameState.session?.timeRemaining ?? 1 <= 0
 
         return LazyVGrid(columns: columns, spacing: 16) {
             ForEach(gameState.session?.answerOptions ?? []) { option in
                 ThickBorderButton(
-                    title: option.text,
+                    title: "\(option.value)",
                     action: { handleAnswer(option) },
                     bgColor: buttonColor(for: option),
                     textColor: gameState.currentTheme.textColor,
@@ -203,36 +217,45 @@ struct GameView: View {
                 .disabled(isTimerExpired)
                 .opacity(isTimerExpired ? 0.5 : 1)
                 .accessibilityLabel("Answer option \(option.value)")
-                .accessibilityHint("Select this as your answer")
+                .accessibilityHint("Select this as the total card value")
             }
         }
     }
 
-    private func buttonColor(for option: GameSession.AnswerOption) -> Color {
+    private func buttonColor(for option: BlackjackSession.AnswerOption) -> Color {
         if selectedAnswer?.id == option.id {
             return option.isCorrect ? gameState.currentTheme.correctColor : gameState.currentTheme.wrongColor
         }
         return gameState.currentTheme.buttonColor
     }
 
-    private func handleAnswer(_ option: GameSession.AnswerOption) {
+    private func handleAnswer(_ option: BlackjackSession.AnswerOption) {
         selectedAnswer = option
 
         if option.isCorrect {
             // Correct answer
-            feedbackText = "NICE!"
+            feedbackText = "CORRECT!"
             feedbackColor = gameState.currentTheme.correctColor
             showFeedback = true
 
+            gameState.player.handleCorrectAnswer()
+            gameState.audioManager.playSound(.correct)
+            gameState.hapticManager.playCorrectFeedback()
+
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                gameState.handleAnswer(option)
+                withAnimation {
+                    gameState.session?.handleCorrectAnswer()
+                }
                 resetFeedback()
             }
         } else {
             // Wrong answer
-            feedbackText = "OOPS!"
+            feedbackText = "WRONG!"
             feedbackColor = gameState.currentTheme.wrongColor
             showFeedback = true
+
+            gameState.audioManager.playSound(.wrong)
+            gameState.hapticManager.playWrongFeedback()
 
             // Shake animation
             withAnimation(.easeInOut(duration: 0.05).repeatCount(4, autoreverses: true)) {
@@ -242,8 +265,18 @@ struct GameView: View {
                 shakeOffset = 0
             }
 
+            // Handle wrong answer through player
+            let result = gameState.player.handleWrongAnswer()
+
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                gameState.handleAnswer(option)
+                switch result {
+                case .gameOver:
+                    gameState.endGame()
+                case .shieldUsed, .luckySave, .secondChanceUsed:
+                    gameState.session?.handleWrongAnswer()
+                case .normal:
+                    gameState.session?.handleWrongAnswer()
+                }
                 resetFeedback()
             }
         }

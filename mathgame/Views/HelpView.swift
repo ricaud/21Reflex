@@ -24,14 +24,11 @@ struct HelpView: View {
                     // How to play
                     howToPlaySection
 
-                    // Game modes
-                    gameModesSection
+                    // Card values
+                    cardValuesSection
 
-                    // Scoring
-                    scoringSection
-
-                    // Buffs
-                    buffsSection
+                    // Soft vs Hard
+                    softHardSection
                 }
                 .padding()
             }
@@ -64,9 +61,9 @@ struct HelpView: View {
                 .foregroundStyle(gameState.currentTheme.textColor)
 
             VStack(alignment: .leading, spacing: 8) {
-                helpRow(icon: "multiply", text: "Solve multiplication problems quickly")
-                helpRow(icon: "checkmark.circle", text: "Tap the correct answer before time runs out")
-                helpRow(icon: "flame", text: "Build streaks for bonus coins")
+                helpRow(icon: "number", text: "Calculate the total value of the dealt cards")
+                helpRow(icon: "checkmark.circle", text: "Tap the correct hand value before time runs out")
+                helpRow(icon: "flame", text: "Build streaks by answering correctly in a row")
                 helpRow(icon: "heart", text: "Wrong answers cost health - 3 strikes and you're out!")
             }
         }
@@ -81,36 +78,16 @@ struct HelpView: View {
         )
     }
 
-    private var gameModesSection: some View {
+    private var cardValuesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("GAME MODES")
+            Text("CARD VALUES")
                 .font(.headline.bold())
                 .foregroundStyle(gameState.currentTheme.textColor)
 
-            VStack(spacing: 12) {
-                modeRow(
-                    name: "CLASSIC",
-                    color: gameState.currentTheme.accentColor,
-                    description: "Standard mode with timer and health"
-                )
-
-                modeRow(
-                    name: "PRACTICE",
-                    color: .green,
-                    description: "No timer, no health - just practice"
-                )
-
-                modeRow(
-                    name: "HARD MODE",
-                    color: .red,
-                    description: "Faster timer, harder questions"
-                )
-
-                modeRow(
-                    name: "DAILY",
-                    color: .blue,
-                    description: "Same questions as everyone else today"
-                )
+            VStack(spacing: 8) {
+                cardValueRow(rank: "2-10", value: "Face value (2=2, 10=10)")
+                cardValueRow(rank: "J, Q, K", value: "10")
+                cardValueRow(rank: "A", value: "1 or 11 (your choice!)")
             }
         }
         .padding()
@@ -124,44 +101,33 @@ struct HelpView: View {
         )
     }
 
-    private var scoringSection: some View {
+    private var softHardSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("SCORING")
+            Text("SOFT VS HARD HANDS")
                 .font(.headline.bold())
                 .foregroundStyle(gameState.currentTheme.textColor)
 
             VStack(alignment: .leading, spacing: 8) {
-                scoringRow(label: "Base correct answer", value: "+1 coin")
-                scoringRow(label: "Streak bonus (every 5)", value: "+1 coin")
-                scoringRow(label: "Double Coins buff", value: "2x multiplier")
-                scoringRow(label: "Streak Bonus buff", value: "Bonus every 3")
-            }
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(gameState.currentTheme.buttonColor)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(gameState.currentTheme.borderColor, lineWidth: 4)
-        )
-    }
+                Text("Soft Hand")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(gameState.currentTheme.textColor)
+                Text("Contains an Ace counted as 11. Example: A-6 is 'Soft 17'")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
-    private var buffsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("BUFFS")
-                .font(.headline.bold())
-                .foregroundStyle(gameState.currentTheme.textColor)
+                Text("Hard Hand")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(gameState.currentTheme.textColor)
+                Text("No Ace, or Ace counted as 1. Example: 10-7 is 'Hard 17'")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
-            Text("Choose a buff every 10 correct answers. Buffs stack and last the entire run!")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            VStack(spacing: 8) {
-                ForEach(Buff.randomBuffs(count: 5, excluding: [])) { buff in
-                    buffRow(buff)
-                }
+                Text("Bust")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.red)
+                Text("Total over 21. You lose!")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding()
@@ -189,53 +155,16 @@ struct HelpView: View {
         }
     }
 
-    private func modeRow(name: String, color: Color, description: String) -> some View {
-        HStack(spacing: 12) {
-            Text(name)
-                .font(.caption.bold())
-                .foregroundStyle(.white)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(color)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-
-            Text(description)
-                .font(.subheadline)
-                .foregroundStyle(gameState.currentTheme.textColor)
-
-            Spacer()
-        }
-    }
-
-    private func scoringRow(label: String, value: String) -> some View {
+    private func cardValueRow(rank: String, value: String) -> some View {
         HStack {
-            Text(label)
-                .font(.subheadline)
+            Text(rank)
+                .font(.subheadline.bold())
                 .foregroundStyle(gameState.currentTheme.textColor)
-
-            Spacer()
+                .frame(width: 70, alignment: .leading)
 
             Text(value)
-                .font(.subheadline.bold())
-                .foregroundStyle(Color(red: 0.9, green: 0.75, blue: 0.2))
-        }
-    }
-
-    private func buffRow(_ buff: Buff) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: buff.icon)
-                .foregroundStyle(gameState.currentTheme.accentColor)
-                .frame(width: 24)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(buff.name)
-                    .font(.caption.bold())
-                    .foregroundStyle(gameState.currentTheme.textColor)
-
-                Text(buff.description)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
 
             Spacer()
         }

@@ -26,11 +26,6 @@ struct PauseView: View {
                 // Stats panel
                 statsPanel
 
-                // Active buffs
-                if !gameState.player.activeBuffs.isEmpty {
-                    buffsSection
-                }
-
                 Spacer()
 
                 // Menu buttons
@@ -166,55 +161,6 @@ struct PauseView: View {
         .padding(.vertical, 8)
     }
 
-    private var buffsSection: some View {
-        VStack(spacing: 12) {
-            Text("ACTIVE POWER-UPS")
-                .font(.headline.bold())
-                .foregroundStyle(.white)
-
-            VStack(spacing: 8) {
-                ForEach(gameState.player.activeBuffs) { activeBuff in
-                    HStack {
-                        Image(systemName: activeBuff.buff.icon)
-                            .foregroundStyle(Color.yellow)
-                            .frame(width: 24)
-
-                        Text(activeBuff.buff.name)
-                            .font(.subheadline)
-                            .foregroundStyle(.white)
-
-                        Spacer()
-
-                        if activeBuff.buff.isStackable {
-                            Text("x\(activeBuff.remainingUses)")
-                                .font(.caption.bold())
-                                .foregroundStyle(.yellow)
-                        } else {
-                            Text("Active")
-                                .font(.caption)
-                                .foregroundStyle(.green)
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.white.opacity(0.1))
-                    )
-                }
-            }
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.1))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.white.opacity(0.3), lineWidth: 2)
-        )
-        .padding(.horizontal, 20)
-    }
 }
 
 #Preview {

@@ -21,8 +21,8 @@ struct MenuView: View {
                     // Title
                     titleSection
 
-                    // Mode selection
-                    modeButtonsSection
+                    // Play button
+                    playButtonSection
 
                     Spacer()
 
@@ -34,17 +34,7 @@ struct MenuView: View {
             .navigationDestination(for: GameState.Screen.self) { screen in
                 switch screen {
                 case .game:
-                    if gameState.selectedGameMode == .blackjack {
-                        BlackjackView()
-                    } else {
-                        GameView()
-                    }
-                case .buffSelect:
-                    BuffSelectView()
-                case .gameOver:
-                    GameOverView()
-                case .shop:
-                    ShopView()
+                    GameView()
                 case .stats:
                     StatsView()
                 case .settings:
@@ -74,13 +64,13 @@ struct MenuView: View {
                 )
 
             // Title
-            Text("MATH RUSH")
-                .font(.system(size: 48, weight: .black, design: .rounded))
+            Text("CARD COUNT")
+                .font(.system(size: 44, weight: .black, design: .rounded))
                 .foregroundStyle(gameState.currentTheme.textColor)
                 .shadow(color: gameState.currentTheme.borderColor, radius: 0, x: 3, y: 3)
 
             // Subtitle
-            Text("MULTIPLY  |  SURVIVE  |  UPGRADE")
+            Text("PRACTICE BLACKJACK CARD COUNTING")
                 .font(.caption.bold())
                 .foregroundStyle(gameState.currentTheme.textColor)
                 .padding(.horizontal, 16)
@@ -94,97 +84,27 @@ struct MenuView: View {
                         .stroke(gameState.currentTheme.borderColor, lineWidth: 3)
                 )
 
-            // Total coins
-            HStack(spacing: 8) {
-                Diamond()
-                    .fill(Color(red: 0.9, green: 0.75, blue: 0.2))
-                    .frame(width: 20, height: 20)
-                Text("\(gameState.player.totalCoins)")
-                    .font(.title2.bold())
-                    .foregroundStyle(Color(red: 0.9, green: 0.75, blue: 0.2))
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(gameState.currentTheme.buttonColor)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(gameState.currentTheme.borderColor, lineWidth: 3)
-            )
         }
     }
 
-    private var modeButtonsSection: some View {
-        VStack(spacing: 12) {
-            // Classic
-            ThickBorderButton(
-                title: "CLASSIC",
-                action: { gameState.startGame(mode: .classic) },
-                bgColor: gameState.currentTheme.accentColor,
-                textColor: .white,
-                borderColor: gameState.currentTheme.borderColor,
-                borderWidth: 4,
-                shadowOffset: 4,
-                cornerRadius: 10
-            )
-            .frame(height: 55)
-            .accessibilityLabel("Classic mode")
-            .accessibilityHint("Starts a classic game with standard rules")
-
-            // Practice
-            ThickBorderButton(
-                title: "PRACTICE",
-                action: { gameState.startGame(mode: .practice) },
-                bgColor: gameState.currentTheme.buttonColor,
-                textColor: gameState.currentTheme.textColor,
-                borderColor: gameState.currentTheme.borderColor,
-                borderWidth: 4,
-                shadowOffset: 4,
-                cornerRadius: 10
-            )
-            .frame(height: 50)
-            .accessibilityLabel("Practice mode")
-            .accessibilityHint("Practice without time limits or penalties")
-
-            // Hard Mode
-            ThickBorderButton(
-                title: "HARD MODE",
-                action: { gameState.startGame(mode: .hard) },
-                bgColor: Color(red: 0.8, green: 0.3, blue: 0.3),
-                textColor: .white,
-                borderColor: gameState.currentTheme.borderColor,
-                borderWidth: 4,
-                shadowOffset: 4,
-                cornerRadius: 10
-            )
-            .frame(height: 50)
-            .accessibilityLabel("Hard mode")
-            .accessibilityHint("Shorter timer, no buffs, double coins")
-
-            // Blackjack
-            ThickBorderButton(
-                title: "BLACKJACK",
-                action: { gameState.startGame(mode: .blackjack) },
-                bgColor: Color(red: 0.2, green: 0.6, blue: 0.3),
-                textColor: .white,
-                borderColor: gameState.currentTheme.borderColor,
-                borderWidth: 4,
-                shadowOffset: 4,
-                cornerRadius: 10
-            )
-            .frame(height: 50)
-            .accessibilityLabel("Blackjack mode")
-            .accessibilityHint("Practice card counting with casino rules")
-        }
+    private var playButtonSection: some View {
+        ThickBorderButton(
+            title: "PLAY",
+            action: { gameState.startGame() },
+            bgColor: Color(red: 0.2, green: 0.6, blue: 0.3),
+            textColor: .white,
+            borderColor: gameState.currentTheme.borderColor,
+            borderWidth: 4,
+            shadowOffset: 4,
+            cornerRadius: 10
+        )
+        .frame(height: 60)
+        .accessibilityLabel("Play Blackjack")
+        .accessibilityHint("Start a new blackjack card counting game")
     }
 
     private var bottomToolbar: some View {
         HStack(spacing: 12) {
-            toolbarButton(title: "SHOP", icon: "bag.fill", action: {
-                gameState.navigate(to: .shop)
-            })
-
             toolbarButton(title: "STATS", icon: "chart.bar.fill", action: {
                 gameState.navigate(to: .stats)
             })

@@ -17,9 +17,7 @@ class GameState {
     enum Screen: Hashable {
         case menu
         case game
-        case buffSelect
         case gameOver
-        case shop
         case stats
         case settings
         case help
@@ -30,8 +28,7 @@ class GameState {
 
     // MARK: - Game Objects
     var player = Player()
-    var session: GameSession?
-    var blackjackSession: BlackjackSession?
+    var session: BlackjackSession?
     var audioManager = AudioManager()
     var hapticManager = HapticManager()
 
@@ -42,12 +39,6 @@ class GameState {
     // MARK: - UI State
     var isPaused: Bool = false
     var showPauseOverlay: Bool = false
-    var newlyUnlockedAchievements: [Achievement] = []
-    var showAchievementToast: Bool = false
-    var currentAchievementToast: Achievement?
-
-    // MARK: - Game Mode Selection
-    var selectedGameMode: GameSession.GameMode = .classic
 
     // MARK: - Settings Navigation
     var showSettingsInPause: Bool = false
@@ -75,27 +66,16 @@ class GameState {
     }
 
     // MARK: - Game Flow
-    func startGame(mode: GameSession.GameMode) {
-        selectedGameMode = mode
+    func startGame() {
         player.resetForRun()
 
-        if mode == .blackjack {
-            blackjackSession = BlackjackSession()
-            blackjackSession?.onTimerExpire = { [weak self] in
-                Task { @MainActor in
-                    self?.handleBlackjackTimeExpired()
-                }
+        session = BlackjackSession()
+        session?.onTimerExpire = { [weak self] in
+            Task { @MainActor in
+                self?.handleBlackjackTimeExpired()
             }
-            blackjackSession?.start()
-        } else {
-            session = GameSession()
-            session?.onTimerExpire = { [weak self] in
-                Task { @MainActor in
-                    self?.handleTimeExpired()
-                }
-            }
-            session?.start(mode: mode)
         }
+        session?.start()
 
         audioManager.playMusic(.playing)
         navigate(to: .game)
@@ -110,125 +90,29 @@ class GameState {
         case .shieldUsed, .luckySave, .secondChanceUsed:
             audioManager.playSound(.wrong)
             hapticManager.playWrongFeedback()
-            blackjackSession?.handleWrongAnswer()
+            session?.handleWrongAnswer()
         case .normal:
             audioManager.playSound(.wrong)
             hapticManager.playWrongFeedback()
-            blackjackSession?.handleWrongAnswer()
+            session?.handleWrongAnswer()
         }
     }
 
-    func handleTimeExpired() {
-        // Time ran out - treat as wrong answer
-        let result = player.handleWrongAnswer()
-
-        switch result {
-        case .gameOver:
-            endGame()
-        case .shieldUsed, .luckySave, .secondChanceUsed:
-            audioManager.playSound(.wrong)
-            hapticManager.playWrongFeedback()
-            // Continue game with new question
-            session?.generateQuestion()
-        case .normal:
-            audioManager.playSound(.wrong)
-            hapticManager.playWrongFeedback()
-            session?.increaseDifficulty()
-            session?.generateQuestion()
-        }
-    }
-
-    func handleAnswer(_ option: GameSession.AnswerOption) {
-        guard let session = session else { return }
-
-        // Don't process answer if timer has expired
-        if session.mode.hasTimer && session.timeRemaining <= 0 {
-            return
-        }
-
-        if option.isCorrect {
-            // Correct answer
-            player.handleCorrectAnswer()
-            session.increaseDifficulty()
-            session.handleBossBattleProgress()
-
-            audioManager.playSound(.correct)
-            hapticManager.playCorrectFeedback()
-
-            // Check for buff selection
-            if player.correctCount % 10 == 0 && session.mode.buffsEnabled {
-                session.pauseTimer()
-                audioManager.playMusic(.buffSelect)
-                navigate(to: .buffSelect)
-                return
-            }
-
-            // Generate next question
-            session.generateQuestion()
-
-        } else {
-            // Wrong answer
-            let result = player.handleWrongAnswer()
-
-            switch result {
-            case .gameOver:
-                endGame()
-            case .shieldUsed, .luckySave, .secondChanceUsed:
-                audioManager.playSound(.wrong)
-                // Continue game
-                session.generateQuestion()
-            case .normal:
-                audioManager.playSound(.wrong)
-                hapticManager.playWrongFeedback()
-                session.increaseDifficulty()
-                session.generateQuestion()
-            }
-        }
-    }
-
-    func selectBuff(_ buff: Buff) {
-        player.addBuff(buff)
-        audioManager.playSound(.buffSelect)
-        audioManager.playMusic(.playing)
-
-        // Resume timer when returning from buff selection
-        session?.resumeTimer()
-
-        // Remove buff select from navigation
-        if let index = navigationPath.lastIndex(where: { $0 == .buffSelect }) {
-            navigationPath.remove(at: index)
-        }
-        currentScreen = .game
-    }
 
     func endGame() {
         session?.endGame()
-        blackjackSession?.endGame()
-
-        // Update high scores (only for math modes for now)
-        if selectedGameMode != .blackjack {
-            let _ = player.updateHighScores()
-        }
-
-        // Check achievements
-        newlyUnlockedAchievements = player.checkAchievements()
-        if let first = newlyUnlockedAchievements.first {
-            currentAchievementToast = first
-            showAchievementToast = true
-            audioManager.playSound(.achievement)
-        }
 
         // Update lifetime stats
         player.lifetimeStats.runsCompleted += 1
 
         audioManager.playMusic(.gameOver)
-        navigate(to: .gameOver)
+        returnToMenu()
     }
 
     func restartGame() {
         setPauseState(false)
         resetNavigation()
-        startGame(mode: selectedGameMode)
+        startGame()
     }
 
     func returnToMenu() {
@@ -238,8 +122,6 @@ class GameState {
         // Then clean up session
         session?.reset()
         session = nil
-        blackjackSession?.reset()
-        blackjackSession = nil
 
         // Finally reset navigation
         resetNavigation()
@@ -253,11 +135,9 @@ class GameState {
 
         if paused {
             session?.pauseTimer()
-            blackjackSession?.pauseTimer()
             audioManager.pauseMusic()
         } else {
             session?.resumeTimer()
-            blackjackSession?.resumeTimer()
             audioManager.resumeMusic()
         }
     }
@@ -297,29 +177,6 @@ class GameState {
         // This is a hook for any additional save logic
     }
 
-    // MARK: - Theme
-    func updateTheme(_ theme: Theme) {
-        currentTheme = theme
-    }
-
-    // MARK: - Shop
-    func purchaseTheme(_ theme: Theme) -> Bool {
-        guard player.unlockTheme(theme.id, cost: theme.cost) else { return false }
-        audioManager.playSound(.themeBuy)
-        return true
-    }
-
-    func equipTheme(_ theme: Theme) {
-        player.equipTheme(theme.id)
-        currentTheme = theme
-
-        // Update available themes to reflect equipped status
-        if let index = availableThemes.firstIndex(where: { $0.id == theme.id }) {
-            for i in availableThemes.indices {
-                availableThemes[i].isEquipped = (i == index)
-            }
-        }
-    }
 
     // MARK: - Settings from Pause
     func showSettingsFromPause() {
