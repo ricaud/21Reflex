@@ -2,7 +2,7 @@
 //  mathgameApp.swift
 //  mathgame
 //
-//  Created by ricaud on 2/6/26.
+//  Main app entry point
 //
 
 import SwiftUI
@@ -10,23 +10,38 @@ import SwiftData
 
 @main
 struct mathgameApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            PersistentPlayer.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // Log error and fallback to in-memory storage rather than crashing
+            print("Failed to create persistent ModelContainer: \(error)")
+            print("Falling back to in-memory storage")
+
+            let fallbackConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            do {
+                return try ModelContainer(for: schema, configurations: [fallbackConfig])
+            } catch {
+                // Only crash if even in-memory fails (critical system issue)
+                fatalError("Critical: Cannot create any ModelContainer: \(error)")
+            }
         }
     }()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MenuView()
         }
         .modelContainer(sharedModelContainer)
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            GameState.shared.handleScenePhaseChange(newPhase)
+        }
     }
 }
