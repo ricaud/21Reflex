@@ -8,6 +8,8 @@
 import SwiftUI
 import SwiftData
 
+import UIKit
+
 @Model
 class Theme {
     var id: String
@@ -15,8 +17,9 @@ class Theme {
     var cost: Int
     var isUnlocked: Bool
     var isEquipped: Bool
+    var supportsDarkMode: Bool
 
-    // Colors stored as hex strings
+    // Light mode colors stored as hex strings
     var bgColorHex: String
     var textColorHex: String
     var accentColorHex: String
@@ -26,14 +29,29 @@ class Theme {
     var wrongColorHex: String
     var borderColorHex: String
 
+    // Dark mode colors stored as hex strings (optional)
+    var bgColorDarkHex: String?
+    var textColorDarkHex: String?
+    var accentColorDarkHex: String?
+    var buttonColorDarkHex: String?
+    var buttonTextColorDarkHex: String?
+    var correctColorDarkHex: String?
+    var wrongColorDarkHex: String?
+    var borderColorDarkHex: String?
+
     init(id: String, name: String, cost: Int, isUnlocked: Bool = false, isEquipped: Bool = false,
+         supportsDarkMode: Bool = false,
          bgColor: Color, textColor: Color, accentColor: Color, buttonColor: Color,
-         buttonTextColor: Color, correctColor: Color, wrongColor: Color, borderColor: Color) {
+         buttonTextColor: Color, correctColor: Color, wrongColor: Color, borderColor: Color,
+         bgColorDark: Color? = nil, textColorDark: Color? = nil, accentColorDark: Color? = nil,
+         buttonColorDark: Color? = nil, buttonTextColorDark: Color? = nil, correctColorDark: Color? = nil,
+         wrongColorDark: Color? = nil, borderColorDark: Color? = nil) {
         self.id = id
         self.name = name
         self.cost = cost
         self.isUnlocked = isUnlocked
         self.isEquipped = isEquipped
+        self.supportsDarkMode = supportsDarkMode
         self.bgColorHex = bgColor.toHex()
         self.textColorHex = textColor.toHex()
         self.accentColorHex = accentColor.toHex()
@@ -42,8 +60,17 @@ class Theme {
         self.correctColorHex = correctColor.toHex()
         self.wrongColorHex = wrongColor.toHex()
         self.borderColorHex = borderColor.toHex()
+        self.bgColorDarkHex = bgColorDark?.toHex()
+        self.textColorDarkHex = textColorDark?.toHex()
+        self.accentColorDarkHex = accentColorDark?.toHex()
+        self.buttonColorDarkHex = buttonColorDark?.toHex()
+        self.buttonTextColorDarkHex = buttonTextColorDark?.toHex()
+        self.correctColorDarkHex = correctColorDark?.toHex()
+        self.wrongColorDarkHex = wrongColorDark?.toHex()
+        self.borderColorDarkHex = borderColorDark?.toHex()
     }
 
+    // Light mode colors
     var bgColor: Color { Color(hex: bgColorHex) }
     var textColor: Color { Color(hex: textColorHex) }
     var accentColor: Color { Color(hex: accentColorHex) }
@@ -53,12 +80,58 @@ class Theme {
     var wrongColor: Color { Color(hex: wrongColorHex) }
     var borderColor: Color { Color(hex: borderColorHex) }
 
+    // Dark mode colors (fallback to light mode if not specified)
+    var bgColorDark: Color { bgColorDarkHex.map { Color(hex: $0) } ?? bgColor }
+    var textColorDark: Color { textColorDarkHex.map { Color(hex: $0) } ?? textColor }
+    var accentColorDark: Color { accentColorDarkHex.map { Color(hex: $0) } ?? accentColor }
+    var buttonColorDark: Color { buttonColorDarkHex.map { Color(hex: $0) } ?? buttonColor }
+    var buttonTextColorDark: Color { buttonTextColorDarkHex.map { Color(hex: $0) } ?? buttonTextColor }
+    var correctColorDark: Color { correctColorDarkHex.map { Color(hex: $0) } ?? correctColor }
+    var wrongColorDark: Color { wrongColorDarkHex.map { Color(hex: $0) } ?? wrongColor }
+    var borderColorDark: Color { borderColorDarkHex.map { Color(hex: $0) } ?? borderColor }
+
+    /// Returns the appropriate color for the current color scheme
+    func effectiveBgColor(_ colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark && supportsDarkMode ? bgColorDark : bgColor
+    }
+
+    func effectiveTextColor(_ colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark && supportsDarkMode ? textColorDark : textColor
+    }
+
+    func effectiveAccentColor(_ colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark && supportsDarkMode ? accentColorDark : accentColor
+    }
+
+    func effectiveButtonColor(_ colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark && supportsDarkMode ? buttonColorDark : buttonColor
+    }
+
+    func effectiveButtonTextColor(_ colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark && supportsDarkMode ? buttonTextColorDark : buttonTextColor
+    }
+
+    func effectiveCorrectColor(_ colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark && supportsDarkMode ? correctColorDark : correctColor
+    }
+
+    func effectiveWrongColor(_ colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark && supportsDarkMode ? wrongColorDark : wrongColor
+    }
+
+    func effectiveBorderColor(_ colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark && supportsDarkMode ? borderColorDark : borderColor
+    }
+
+    // MARK: - Light Mode Themes
+
     static let classic = Theme(
         id: "classic",
         name: "Classic",
         cost: 0,
         isUnlocked: true,
         isEquipped: true,
+        supportsDarkMode: true,
         bgColor: Color(red: 0.95, green: 0.95, blue: 0.90),
         textColor: Color(red: 0.20, green: 0.20, blue: 0.25),
         accentColor: Color(red: 0.20, green: 0.60, blue: 0.90),
@@ -66,13 +139,23 @@ class Theme {
         buttonTextColor: Color(red: 0.20, green: 0.20, blue: 0.25),
         correctColor: Color(red: 0.30, green: 0.85, blue: 0.30),
         wrongColor: Color(red: 0.90, green: 0.30, blue: 0.30),
-        borderColor: Color(red: 0.15, green: 0.15, blue: 0.20)
+        borderColor: Color(red: 0.15, green: 0.15, blue: 0.20),
+        // Dark mode variants
+        bgColorDark: Color(red: 0.10, green: 0.10, blue: 0.15),
+        textColorDark: Color(red: 0.95, green: 0.95, blue: 0.90),
+        accentColorDark: Color(red: 0.40, green: 0.70, blue: 1.00),
+        buttonColorDark: Color(red: 0.20, green: 0.20, blue: 0.30),
+        buttonTextColorDark: Color(red: 0.95, green: 0.95, blue: 0.90),
+        correctColorDark: Color(red: 0.40, green: 0.90, blue: 0.40),
+        wrongColorDark: Color(red: 1.00, green: 0.40, blue: 0.40),
+        borderColorDark: Color(red: 0.30, green: 0.30, blue: 0.40)
     )
 
     static let candy = Theme(
         id: "candy",
         name: "Candy",
         cost: 100,
+        supportsDarkMode: true,
         bgColor: Color(red: 1.00, green: 0.90, blue: 0.95),
         textColor: Color(red: 0.30, green: 0.20, blue: 0.30),
         accentColor: Color(red: 1.00, green: 0.40, blue: 0.70),
@@ -80,13 +163,23 @@ class Theme {
         buttonTextColor: Color(red: 0.30, green: 0.20, blue: 0.30),
         correctColor: Color(red: 0.40, green: 0.90, blue: 0.50),
         wrongColor: Color(red: 0.95, green: 0.40, blue: 0.40),
-        borderColor: Color(red: 0.25, green: 0.15, blue: 0.25)
+        borderColor: Color(red: 0.25, green: 0.15, blue: 0.25),
+        // Dark mode variants
+        bgColorDark: Color(red: 0.20, green: 0.10, blue: 0.20),
+        textColorDark: Color(red: 1.00, green: 0.85, blue: 0.95),
+        accentColorDark: Color(red: 1.00, green: 0.50, blue: 0.80),
+        buttonColorDark: Color(red: 0.35, green: 0.20, blue: 0.35),
+        buttonTextColorDark: Color(red: 1.00, green: 0.85, blue: 0.95),
+        correctColorDark: Color(red: 0.50, green: 1.00, blue: 0.60),
+        wrongColorDark: Color(red: 1.00, green: 0.50, blue: 0.50),
+        borderColorDark: Color(red: 0.40, green: 0.25, blue: 0.40)
     )
 
     static let ocean = Theme(
         id: "ocean",
         name: "Ocean",
         cost: 200,
+        supportsDarkMode: true,
         bgColor: Color(red: 0.85, green: 0.95, blue: 1.00),
         textColor: Color(red: 0.10, green: 0.20, blue: 0.35),
         accentColor: Color(red: 0.00, green: 0.60, blue: 0.80),
@@ -94,13 +187,24 @@ class Theme {
         buttonTextColor: Color(red: 0.10, green: 0.20, blue: 0.35),
         correctColor: Color(red: 0.20, green: 0.80, blue: 0.60),
         wrongColor: Color(red: 0.90, green: 0.40, blue: 0.40),
-        borderColor: Color(red: 0.05, green: 0.15, blue: 0.30)
+        borderColor: Color(red: 0.05, green: 0.15, blue: 0.30),
+        // Dark mode variants
+        bgColorDark: Color(red: 0.05, green: 0.15, blue: 0.25),
+        textColorDark: Color(red: 0.80, green: 0.95, blue: 1.00),
+        accentColorDark: Color(red: 0.20, green: 0.80, blue: 1.00),
+        buttonColorDark: Color(red: 0.10, green: 0.30, blue: 0.45),
+        buttonTextColorDark: Color(red: 0.80, green: 0.95, blue: 1.00),
+        correctColorDark: Color(red: 0.30, green: 1.00, blue: 0.80),
+        wrongColorDark: Color(red: 1.00, green: 0.50, blue: 0.50),
+        borderColorDark: Color(red: 0.15, green: 0.40, blue: 0.60)
     )
 
+    // Retro and Neon are dark-first themes with light mode fallbacks
     static let retro = Theme(
         id: "retro",
         name: "Retro",
         cost: 300,
+        supportsDarkMode: false, // Already a dark theme
         bgColor: Color(red: 0.15, green: 0.15, blue: 0.20),
         textColor: Color(red: 0.00, green: 1.00, blue: 0.00),
         accentColor: Color(red: 1.00, green: 0.00, blue: 1.00),
@@ -115,6 +219,7 @@ class Theme {
         id: "neon",
         name: "Neon",
         cost: 500,
+        supportsDarkMode: false, // Already a dark theme
         bgColor: Color(red: 0.05, green: 0.05, blue: 0.10),
         textColor: Color(red: 1.00, green: 1.00, blue: 1.00),
         accentColor: Color(red: 0.00, green: 1.00, blue: 1.00),
