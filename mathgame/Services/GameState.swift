@@ -159,6 +159,12 @@ class GameState {
             // Sync coins to persistent storage
             persistentPlayer?.totalCoinsEarned += player.coins
 
+            // Save changes to persistent storage
+            // SwiftData auto-saves, but we ensure the persistentPlayer reference is valid
+            if let pp = persistentPlayer {
+                print("[GameState] Earned \(player.coins) coins. Total earned: \(pp.totalCoinsEarned), Available: \(pp.availableCoins)")
+            }
+
             // Submit scores to Game Center
             Task {
                 await GameCenterManager.shared.submitScores(

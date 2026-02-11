@@ -164,11 +164,14 @@ struct ThemeStoreView: View {
             return
         }
 
-        // Deduct coins
+        // Deduct coins from persistent player
         persistentPlayer?.totalCoinsSpent += theme.cost
 
         // Unlock theme
         theme.isUnlocked = true
+
+        // Save changes to SwiftData
+        try? modelContext.save()
 
         // Show success animation
         purchasedTheme = theme

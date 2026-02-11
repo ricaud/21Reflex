@@ -12,6 +12,15 @@ struct MenuView: View {
     @State private var gameState = GameState.shared
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var modelContext
+    @Query private var persistentPlayers: [PersistentPlayer]
+
+    private var persistentPlayer: PersistentPlayer? {
+        persistentPlayers.first
+    }
+
+    private var availableCoins: Int {
+        persistentPlayer?.availableCoins ?? 0
+    }
 
     // Card animation states
     @State private var kingDealt = false
@@ -184,7 +193,7 @@ struct MenuView: View {
                 .font(.title3)
                 .foregroundStyle(.yellow)
 
-            Text("\(gameState.persistentPlayer?.availableCoins ?? 0)")
+            Text("\(availableCoins)")
                 .font(.headline.bold())
                 .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
         }
