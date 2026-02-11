@@ -9,17 +9,21 @@ import SwiftUI
 
 struct StatsView: View {
     @State private var gameState = GameState.shared
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ZStack {
             // Background
-            gameState.currentTheme.bgColor
+            gameState.currentTheme.effectiveBgColor(colorScheme)
                 .ignoresSafeArea()
 
             ScrollView {
                 VStack(spacing: 24) {
                     // Header
                     headerSection
+
+                    // Game Center section
+                    gameCenterSection
 
                     // Statistics grid
                     statisticsSection
@@ -36,26 +40,81 @@ struct StatsView: View {
         VStack(spacing: 8) {
             // Decorative line
             Rectangle()
-                .fill(gameState.currentTheme.accentColor)
+                .fill(gameState.currentTheme.effectiveAccentColor(colorScheme))
                 .frame(height: 8)
                 .clipShape(RoundedRectangle(cornerRadius: 4))
                 .overlay(
                     RoundedRectangle(cornerRadius: 4)
-                        .stroke(gameState.currentTheme.borderColor, lineWidth: 3)
+                        .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 3)
                 )
 
             Text("STATISTICS")
                 .font(.system(size: 36, weight: .black, design: .rounded))
-                .foregroundStyle(gameState.currentTheme.textColor)
-                .shadow(color: gameState.currentTheme.borderColor, radius: 0, x: 3, y: 3)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
+                .shadow(color: gameState.currentTheme.effectiveBorderColor(colorScheme), radius: 0, x: 3, y: 3)
         }
+    }
+
+    private var gameCenterSection: some View {
+        VStack(spacing: 16) {
+            Text("GAME CENTER")
+                .font(.headline.bold())
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
+
+            HStack(spacing: 12) {
+                // Authentication status
+                HStack(spacing: 6) {
+                    Image(systemName: GameCenterManager.shared.isAuthenticated ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .foregroundStyle(GameCenterManager.shared.isAuthenticated ? .green : .red)
+
+                    Text(GameCenterManager.shared.isAuthenticated ? "Connected" : "Not Connected")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
+                    Capsule()
+                        .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
+                )
+
+                Spacer()
+
+                // View Leaderboards button
+                Button(action: {
+                    gameState.navigate(to: .leaderboards)
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "trophy.fill")
+                        Text("Leaderboards")
+                            .font(.subheadline.bold())
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .fill(Color.blue)
+                    )
+                }
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 4)
+        )
     }
 
     private var statisticsSection: some View {
         VStack(spacing: 16) {
             Text("LIFETIME STATS")
                 .font(.headline.bold())
-                .foregroundStyle(gameState.currentTheme.textColor)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
 
             LazyVGrid(columns: [
                 GridItem(.flexible()),
@@ -70,7 +129,7 @@ struct StatsView: View {
 
                 statCard(
                     icon: "checkmark.circle.fill",
-                    iconColor: gameState.currentTheme.correctColor,
+                    iconColor: gameState.currentTheme.effectiveCorrectColor(colorScheme),
                     value: "\(accuracyPercentage)%",
                     label: "Accuracy"
                 )
@@ -93,11 +152,11 @@ struct StatsView: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(gameState.currentTheme.buttonColor)
+                .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(gameState.currentTheme.borderColor, lineWidth: 4)
+                .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 4)
         )
     }
 
@@ -105,7 +164,7 @@ struct StatsView: View {
         VStack(spacing: 16) {
             Text("TOP SCORES")
                 .font(.headline.bold())
-                .foregroundStyle(gameState.currentTheme.textColor)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
 
             VStack(spacing: 12) {
                 ForEach(0..<3, id: \.self) { index in
@@ -116,11 +175,11 @@ struct StatsView: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(gameState.currentTheme.buttonColor)
+                .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(gameState.currentTheme.borderColor, lineWidth: 4)
+                .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 4)
         )
     }
 
@@ -137,18 +196,18 @@ struct StatsView: View {
 
             Text("\(index + 1)\(ordinalSuffix(index))")
                 .font(.subheadline.bold())
-                .foregroundStyle(gameState.currentTheme.textColor)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
 
             Spacer()
 
             if hasScore {
                 Text("\(topScores[index]) pts")
                     .font(.title3.bold())
-                    .foregroundStyle(gameState.currentTheme.textColor)
+                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
             } else {
                 Text("-")
                     .font(.title3.bold())
-                    .foregroundStyle(gameState.currentTheme.textColor.opacity(0.3))
+                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme).opacity(0.3))
             }
         }
         .padding(.horizontal, 8)
@@ -189,17 +248,17 @@ struct StatsView: View {
 
             Text(value)
                 .font(.title3.bold())
-                .foregroundStyle(gameState.currentTheme.textColor)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
 
             Text(label)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme).opacity(0.6))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(gameState.currentTheme.bgColor.opacity(0.5))
+                .fill(gameState.currentTheme.effectiveBgColor(colorScheme).opacity(0.5))
         )
     }
 
