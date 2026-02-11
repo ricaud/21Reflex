@@ -18,6 +18,8 @@ struct PauseView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 20) {
+                Spacer()
+
                 // Paused title
                 Text("PAUSED!")
                     .font(.system(size: 44, weight: .black, design: .rounded))
@@ -72,6 +74,8 @@ struct PauseView: View {
                 }
                 .padding(.horizontal, 40)
                 .padding(.bottom, 20)
+                
+                Spacer()
             }
             .padding(.top, 40)
         }

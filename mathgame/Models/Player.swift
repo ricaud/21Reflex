@@ -91,6 +91,7 @@ class Player {
     func handleCorrectAnswer() {
         streak += 1
         correctCount += 1
+        coins += 1  // Earn 1 coin for each correct answer
         lifetimeStats.totalCorrect += 1
         lifetimeStats.totalQuestionsAnswered += 1
     }

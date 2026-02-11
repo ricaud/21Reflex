@@ -27,6 +27,8 @@ struct GameView: View {
 
             VStack(spacing: 16) {
                 // Header
+                Spacer()
+                Spacer()
                 headerSection
 
                 // Timer bar (hidden in practice mode)
@@ -100,7 +102,7 @@ struct GameView: View {
 
                 // Controls
                 controlsSection
-
+                Spacer()
                 Spacer()
             }
             .padding()

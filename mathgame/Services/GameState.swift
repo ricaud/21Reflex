@@ -173,7 +173,7 @@ class GameState {
         }
 
         audioManager.playMusic(.gameOver)
-        returnToMenu()
+        navigate(to: .gameOver)
     }
 
     private func checkAchievements() async {

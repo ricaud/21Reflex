@@ -64,7 +64,7 @@ struct MenuView: View {
                     case .game:
                         GameView()
                     case .gameOver:
-                        EmptyView()
+                        GameOverView()
                     case .stats:
                         StatsView()
                     case .settings:
