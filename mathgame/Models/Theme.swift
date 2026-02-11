@@ -230,8 +230,178 @@ class Theme {
         borderColor: Color(red: 0.00, green: 1.00, blue: 1.00)
     )
 
+    // MARK: - Common Themes (100-300 coins)
+
+    static let forest = Theme(
+        id: "forest",
+        name: "Forest",
+        cost: 150,
+        supportsDarkMode: true,
+        bgColor: Color(red: 0.90, green: 0.95, blue: 0.88),
+        textColor: Color(red: 0.15, green: 0.30, blue: 0.15),
+        accentColor: Color(red: 0.20, green: 0.60, blue: 0.30),
+        buttonColor: Color(red: 0.80, green: 0.90, blue: 0.75),
+        buttonTextColor: Color(red: 0.15, green: 0.30, blue: 0.15),
+        correctColor: Color(red: 0.30, green: 0.80, blue: 0.30),
+        wrongColor: Color(red: 0.90, green: 0.30, blue: 0.30),
+        borderColor: Color(red: 0.20, green: 0.40, blue: 0.20),
+        bgColorDark: Color(red: 0.10, green: 0.20, blue: 0.10),
+        textColorDark: Color(red: 0.85, green: 0.95, blue: 0.85),
+        accentColorDark: Color(red: 0.40, green: 0.80, blue: 0.50),
+        buttonColorDark: Color(red: 0.20, green: 0.35, blue: 0.20),
+        buttonTextColorDark: Color(red: 0.85, green: 0.95, blue: 0.85),
+        correctColorDark: Color(red: 0.50, green: 0.90, blue: 0.50),
+        wrongColorDark: Color(red: 1.00, green: 0.40, blue: 0.40),
+        borderColorDark: Color(red: 0.30, green: 0.50, blue: 0.30)
+    )
+
+    static let sunset = Theme(
+        id: "sunset",
+        name: "Sunset",
+        cost: 200,
+        supportsDarkMode: true,
+        bgColor: Color(red: 1.00, green: 0.92, blue: 0.85),
+        textColor: Color(red: 0.40, green: 0.20, blue: 0.20),
+        accentColor: Color(red: 1.00, green: 0.50, blue: 0.20),
+        buttonColor: Color(red: 1.00, green: 0.80, blue: 0.70),
+        buttonTextColor: Color(red: 0.40, green: 0.20, blue: 0.20),
+        correctColor: Color(red: 0.40, green: 0.80, blue: 0.40),
+        wrongColor: Color(red: 0.90, green: 0.35, blue: 0.35),
+        borderColor: Color(red: 0.50, green: 0.30, blue: 0.25),
+        bgColorDark: Color(red: 0.25, green: 0.15, blue: 0.15),
+        textColorDark: Color(red: 1.00, green: 0.85, blue: 0.75),
+        accentColorDark: Color(red: 1.00, green: 0.60, blue: 0.30),
+        buttonColorDark: Color(red: 0.40, green: 0.25, blue: 0.20),
+        buttonTextColorDark: Color(red: 1.00, green: 0.85, blue: 0.75),
+        correctColorDark: Color(red: 0.50, green: 0.90, blue: 0.50),
+        wrongColorDark: Color(red: 1.00, green: 0.45, blue: 0.45),
+        borderColorDark: Color(red: 0.60, green: 0.40, blue: 0.35)
+    )
+
+    static let midnight = Theme(
+        id: "midnight",
+        name: "Midnight",
+        cost: 250,
+        supportsDarkMode: false, // Dark-first theme
+        bgColor: Color(red: 0.08, green: 0.10, blue: 0.20),
+        textColor: Color(red: 0.80, green: 0.85, blue: 1.00),
+        accentColor: Color(red: 0.50, green: 0.60, blue: 1.00),
+        buttonColor: Color(red: 0.15, green: 0.20, blue: 0.35),
+        buttonTextColor: Color(red: 0.80, green: 0.85, blue: 1.00),
+        correctColor: Color(red: 0.40, green: 0.90, blue: 0.60),
+        wrongColor: Color(red: 0.90, green: 0.40, blue: 0.40),
+        borderColor: Color(red: 0.30, green: 0.40, blue: 0.70)
+    )
+
+    // MARK: - Rare Themes (500-1000 coins)
+
+    static let halloween = Theme(
+        id: "halloween",
+        name: "Halloween",
+        cost: 500,
+        supportsDarkMode: false, // Dark-first theme
+        bgColor: Color(red: 0.10, green: 0.08, blue: 0.05),
+        textColor: Color(red: 1.00, green: 0.55, blue: 0.00),
+        accentColor: Color(red: 0.90, green: 0.30, blue: 0.00),
+        buttonColor: Color(red: 0.20, green: 0.15, blue: 0.10),
+        buttonTextColor: Color(red: 1.00, green: 0.55, blue: 0.00),
+        correctColor: Color(red: 0.40, green: 0.90, blue: 0.20),
+        wrongColor: Color(red: 0.80, green: 0.20, blue: 0.20),
+        borderColor: Color(red: 0.60, green: 0.30, blue: 0.00)
+    )
+
+    static let christmas = Theme(
+        id: "christmas",
+        name: "Christmas",
+        cost: 600,
+        supportsDarkMode: true,
+        bgColor: Color(red: 0.95, green: 0.98, blue: 0.95),
+        textColor: Color(red: 0.10, green: 0.35, blue: 0.15),
+        accentColor: Color(red: 0.80, green: 0.15, blue: 0.15),
+        buttonColor: Color(red: 0.85, green: 0.95, blue: 0.85),
+        buttonTextColor: Color(red: 0.10, green: 0.35, blue: 0.15),
+        correctColor: Color(red: 0.20, green: 0.70, blue: 0.25),
+        wrongColor: Color(red: 0.90, green: 0.25, blue: 0.25),
+        borderColor: Color(red: 0.60, green: 0.15, blue: 0.15),
+        bgColorDark: Color(red: 0.08, green: 0.20, blue: 0.10),
+        textColorDark: Color(red: 0.90, green: 0.98, blue: 0.90),
+        accentColorDark: Color(red: 0.90, green: 0.20, blue: 0.20),
+        buttonColorDark: Color(red: 0.15, green: 0.35, blue: 0.18),
+        buttonTextColorDark: Color(red: 0.90, green: 0.98, blue: 0.90),
+        correctColorDark: Color(red: 0.30, green: 0.80, blue: 0.35),
+        wrongColorDark: Color(red: 1.00, green: 0.35, blue: 0.35),
+        borderColorDark: Color(red: 0.70, green: 0.25, blue: 0.25)
+    )
+
+    static let galaxy = Theme(
+        id: "galaxy",
+        name: "Galaxy",
+        cost: 800,
+        supportsDarkMode: false, // Dark-first theme
+        bgColor: Color(red: 0.05, green: 0.03, blue: 0.15),
+        textColor: Color(red: 0.90, green: 0.80, blue: 1.00),
+        accentColor: Color(red: 0.70, green: 0.40, blue: 1.00),
+        buttonColor: Color(red: 0.15, green: 0.10, blue: 0.30),
+        buttonTextColor: Color(red: 0.90, green: 0.80, blue: 1.00),
+        correctColor: Color(red: 0.40, green: 1.00, blue: 0.60),
+        wrongColor: Color(red: 1.00, green: 0.40, blue: 0.60),
+        borderColor: Color(red: 0.50, green: 0.30, blue: 0.80)
+    )
+
+    // MARK: - Epic Themes (2000-5000 coins)
+
+    static let gold = Theme(
+        id: "gold",
+        name: "Gold",
+        cost: 2000,
+        supportsDarkMode: false, // Dark-first luxury theme
+        bgColor: Color(red: 0.10, green: 0.08, blue: 0.03),
+        textColor: Color(red: 1.00, green: 0.85, blue: 0.20),
+        accentColor: Color(red: 1.00, green: 0.75, blue: 0.00),
+        buttonColor: Color(red: 0.25, green: 0.20, blue: 0.08),
+        buttonTextColor: Color(red: 1.00, green: 0.85, blue: 0.20),
+        correctColor: Color(red: 0.60, green: 0.90, blue: 0.30),
+        wrongColor: Color(red: 0.90, green: 0.30, blue: 0.30),
+        borderColor: Color(red: 0.80, green: 0.60, blue: 0.10)
+    )
+
+    static let diamond = Theme(
+        id: "diamond",
+        name: "Diamond",
+        cost: 3000,
+        supportsDarkMode: false, // Dark-first ice theme
+        bgColor: Color(red: 0.05, green: 0.10, blue: 0.15),
+        textColor: Color(red: 0.85, green: 0.95, blue: 1.00),
+        accentColor: Color(red: 0.40, green: 0.80, blue: 1.00),
+        buttonColor: Color(red: 0.10, green: 0.20, blue: 0.30),
+        buttonTextColor: Color(red: 0.85, green: 0.95, blue: 1.00),
+        correctColor: Color(red: 0.30, green: 0.90, blue: 0.70),
+        wrongColor: Color(red: 0.90, green: 0.40, blue: 0.50),
+        borderColor: Color(red: 0.50, green: 0.80, blue: 0.95)
+    )
+
+    static let cyberpunk = Theme(
+        id: "cyberpunk",
+        name: "Cyberpunk",
+        cost: 5000,
+        supportsDarkMode: false, // Dark-first neon theme
+        bgColor: Color(red: 0.03, green: 0.02, blue: 0.08),
+        textColor: Color(red: 1.00, green: 0.90, blue: 0.95),
+        accentColor: Color(red: 1.00, green: 0.00, blue: 0.80),
+        buttonColor: Color(red: 0.12, green: 0.00, blue: 0.20),
+        buttonTextColor: Color(red: 1.00, green: 0.90, blue: 0.95),
+        correctColor: Color(red: 0.00, green: 1.00, blue: 0.60),
+        wrongColor: Color(red: 1.00, green: 0.20, blue: 0.40),
+        borderColor: Color(red: 0.90, green: 0.00, blue: 1.00)
+    )
+
     static var allThemes: [Theme] {
-        [classic, candy, ocean, retro, neon]
+        [
+            classic, candy, ocean, retro, neon,
+            forest, sunset, midnight,
+            halloween, christmas, galaxy,
+            gold, diamond, cyberpunk
+        ]
     }
 }
 
