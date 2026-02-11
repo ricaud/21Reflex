@@ -74,6 +74,8 @@ struct MenuView: View {
                         ThemeStoreView()
                     case .leaderboards:
                         LeaderboardsView()
+                    case .achievements:
+                        AchievementsView()
                     case .menu:
                         EmptyView()
                 }

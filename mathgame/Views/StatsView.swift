@@ -97,6 +97,24 @@ struct StatsView: View {
                             .fill(Color.blue)
                     )
                 }
+
+                // View Achievements button
+                Button(action: {
+                    gameState.navigate(to: .achievements)
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "medal.fill")
+                        Text("Achievements")
+                            .font(.subheadline.bold())
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .fill(Color.orange)
+                    )
+                }
             }
         }
         .padding()

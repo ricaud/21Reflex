@@ -23,6 +23,7 @@ class GameState {
         case help
         case themes
         case leaderboards
+        case achievements
     }
 
     var navigationPath: [Screen] = []
