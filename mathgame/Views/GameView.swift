@@ -9,6 +9,7 @@ import SwiftUI
 
 struct GameView: View {
     @State private var gameState = GameState.shared
+    @Environment(\.colorScheme) private var colorScheme
     @State private var selectedAnswer: BlackjackSession.AnswerOption?
     @State private var showFeedback = false
     @State private var feedbackText = ""
@@ -21,7 +22,7 @@ struct GameView: View {
     var body: some View {
         ZStack {
             // Background
-            gameState.currentTheme.bgColor
+            gameState.currentTheme.effectiveBgColor(colorScheme)
                 .ignoresSafeArea()
 
             VStack(spacing: 16) {
@@ -43,7 +44,7 @@ struct GameView: View {
                 // Prompt
                 Text("What's the total?")
                     .font(.headline)
-                    .foregroundStyle(gameState.currentTheme.textColor)
+                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
 
                 // Feedback display
                 if gameState.isPracticeMode {
@@ -122,13 +123,13 @@ struct GameView: View {
             Button(action: { gameState.togglePause() }) {
                 Image(systemName: "pause.fill")
                     .font(.title2)
-                    .foregroundStyle(gameState.currentTheme.textColor)
+                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
                     .frame(width: 50, height: 50)
-                    .background(gameState.currentTheme.buttonColor)
+                    .background(gameState.currentTheme.effectiveButtonColor(colorScheme))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(gameState.currentTheme.borderColor, lineWidth: 2)
+                            .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 2)
                     )
             }
             .accessibilityLabel("Pause game")
@@ -138,13 +139,13 @@ struct GameView: View {
             Button(action: { isMuted.toggle() }) {
                 Image(systemName: isMuted ? "speaker.slash.fill" : "speaker.fill")
                     .font(.title2)
-                    .foregroundStyle(gameState.currentTheme.textColor)
+                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
                     .frame(width: 50, height: 50)
-                    .background(gameState.currentTheme.buttonColor)
+                    .background(gameState.currentTheme.effectiveButtonColor(colorScheme))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(gameState.currentTheme.borderColor, lineWidth: 2)
+                            .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 2)
                     )
             }
             .accessibilityLabel(isMuted ? "Unmute sound" : "Mute sound")
@@ -180,16 +181,16 @@ struct GameView: View {
                 HStack(spacing: 4) {
                     Text("\(session.currentRoundPoints)")
                         .font(.headline.bold())
-                        .foregroundStyle(gameState.currentTheme.textColor)
+                        .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
                     Text("pts")
                         .font(.caption)
-                        .foregroundStyle(gameState.currentTheme.textColor.opacity(0.7))
+                        .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme).opacity(0.7))
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(gameState.currentTheme.buttonColor)
+                        .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
                 )
             }
         }
@@ -219,11 +220,11 @@ struct GameView: View {
         .padding(.vertical, 20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(gameState.currentTheme.buttonColor)
+                .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(gameState.currentTheme.borderColor, lineWidth: 4)
+                .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 4)
         )
     }
 
@@ -261,8 +262,8 @@ struct GameView: View {
                     title: option.displayText,
                     action: { handleAnswer(option) },
                     bgColor: buttonColor(for: option),
-                    textColor: gameState.currentTheme.textColor,
-                    borderColor: gameState.currentTheme.borderColor,
+                    textColor: gameState.currentTheme.effectiveTextColor(colorScheme),
+                    borderColor: gameState.currentTheme.effectiveBorderColor(colorScheme),
                     borderWidth: 4,
                     shadowOffset: 5,
                     cornerRadius: 12,
@@ -284,8 +285,8 @@ struct GameView: View {
                     title: option.displayText,
                     action: { handleAnswer(option) },
                     bgColor: buttonColor(for: option),
-                    textColor: gameState.currentTheme.textColor,
-                    borderColor: gameState.currentTheme.borderColor,
+                    textColor: gameState.currentTheme.effectiveTextColor(colorScheme),
+                    borderColor: gameState.currentTheme.effectiveBorderColor(colorScheme),
                     borderWidth: 4,
                     shadowOffset: 5,
                     cornerRadius: 12,
@@ -302,9 +303,9 @@ struct GameView: View {
 
     private func buttonColor(for option: BlackjackSession.AnswerOption) -> Color {
         if selectedAnswer?.id == option.id {
-            return option.isCorrect ? gameState.currentTheme.correctColor : gameState.currentTheme.wrongColor
+            return option.isCorrect ? gameState.currentTheme.effectiveCorrectColor(colorScheme) : gameState.currentTheme.effectiveWrongColor(colorScheme)
         }
-        return gameState.currentTheme.buttonColor
+        return gameState.currentTheme.effectiveButtonColor(colorScheme)
     }
 
     private func handleAnswer(_ option: BlackjackSession.AnswerOption) {
@@ -322,7 +323,7 @@ struct GameView: View {
 
                 // Show combined feedback
                 feedbackText = gameState.isPracticeMode ? "CORRECT" : "CORRECT!"
-                feedbackColor = gameState.currentTheme.correctColor
+                feedbackColor = gameState.currentTheme.effectiveCorrectColor(colorScheme)
                 showFeedback = true
                 showBonusAnimation = hasBonus
 
@@ -335,7 +336,7 @@ struct GameView: View {
                 }
             } else {
                 feedbackText = "CORRECT!"
-                feedbackColor = gameState.currentTheme.correctColor
+                feedbackColor = gameState.currentTheme.effectiveCorrectColor(colorScheme)
                 showFeedback = true
             }
 
@@ -353,7 +354,7 @@ struct GameView: View {
             // Wrong answer - show INCORRECT in red
             pointsEarned = 0
             feedbackText = "INCORRECT"
-            feedbackColor = gameState.currentTheme.wrongColor
+            feedbackColor = gameState.currentTheme.effectiveWrongColor(colorScheme)
             showFeedback = true
 
             gameState.audioManager.playSound(.wrong)

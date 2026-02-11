@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PauseView: View {
     @State private var gameState = GameState.shared
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ZStack {
@@ -34,7 +35,7 @@ struct PauseView: View {
                     ThickBorderButton(
                         title: "RESUME",
                         action: { gameState.resumeGame() },
-                        bgColor: gameState.currentTheme.correctColor,
+                        bgColor: gameState.currentTheme.effectiveCorrectColor(colorScheme),
                         textColor: .white,
                         borderColor: .white,
                         borderWidth: 3,
@@ -47,8 +48,8 @@ struct PauseView: View {
                     ThickBorderButton(
                         title: "RESTART",
                         action: { gameState.restartGame() },
-                        bgColor: gameState.currentTheme.buttonColor,
-                        textColor: gameState.currentTheme.textColor,
+                        bgColor: gameState.currentTheme.effectiveButtonColor(colorScheme),
+                        textColor: gameState.currentTheme.effectiveTextColor(colorScheme),
                         borderColor: .white,
                         borderWidth: 3,
                         shadowOffset: 4,
@@ -95,14 +96,14 @@ struct PauseView: View {
                 statBox(
                     value: "\(gameState.player.correctCount)",
                     label: "Correct",
-                    color: gameState.currentTheme.correctColor
+                    color: gameState.currentTheme.effectiveCorrectColor(colorScheme)
                 )
 
                 // Wrong
                 statBox(
                     value: "\(gameState.player.wrongCount)",
                     label: "Wrong",
-                    color: gameState.currentTheme.wrongColor
+                    color: gameState.currentTheme.effectiveWrongColor(colorScheme)
                 )
             }
 

@@ -9,11 +9,12 @@ import SwiftUI
 
 struct HelpView: View {
     @State private var gameState = GameState.shared
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ZStack {
             // Background
-            gameState.currentTheme.bgColor
+            gameState.currentTheme.effectiveBgColor(colorScheme)
                 .ignoresSafeArea()
 
             ScrollView {
@@ -42,18 +43,18 @@ struct HelpView: View {
         VStack(spacing: 8) {
             // Decorative line
             Rectangle()
-                .fill(gameState.currentTheme.accentColor)
+                .fill(gameState.currentTheme.effectiveAccentColor(colorScheme))
                 .frame(height: 8)
                 .clipShape(RoundedRectangle(cornerRadius: 4))
                 .overlay(
                     RoundedRectangle(cornerRadius: 4)
-                        .stroke(gameState.currentTheme.borderColor, lineWidth: 3)
+                        .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 3)
                 )
 
             Text("HOW TO PLAY")
                 .font(.system(size: 36, weight: .black, design: .rounded))
-                .foregroundStyle(gameState.currentTheme.textColor)
-                .shadow(color: gameState.currentTheme.borderColor, radius: 0, x: 3, y: 3)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
+                .shadow(color: gameState.currentTheme.effectiveBorderColor(colorScheme), radius: 0, x: 3, y: 3)
         }
     }
 
@@ -61,7 +62,7 @@ struct HelpView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("BASICS")
                 .font(.headline.bold())
-                .foregroundStyle(gameState.currentTheme.textColor)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
 
             VStack(alignment: .leading, spacing: 8) {
                 helpRow(icon: "number", text: "Calculate the total value of the dealt cards")
@@ -73,11 +74,11 @@ struct HelpView: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(gameState.currentTheme.buttonColor)
+                .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(gameState.currentTheme.borderColor, lineWidth: 4)
+                .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 4)
         )
     }
 
@@ -85,7 +86,7 @@ struct HelpView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("SCORING")
                 .font(.headline.bold())
-                .foregroundStyle(gameState.currentTheme.textColor)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
 
             VStack(alignment: .leading, spacing: 8) {
                 helpRow(icon: "10.circle.fill",
@@ -99,11 +100,11 @@ struct HelpView: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(gameState.currentTheme.buttonColor)
+                .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(gameState.currentTheme.borderColor, lineWidth: 4)
+                .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 4)
         )
     }
 
@@ -111,7 +112,7 @@ struct HelpView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("CARD VALUES")
                 .font(.headline.bold())
-                .foregroundStyle(gameState.currentTheme.textColor)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
 
             VStack(spacing: 8) {
                 cardValueRow(rank: "2-10", value: "Face value (2=2, 10=10)")
@@ -122,11 +123,11 @@ struct HelpView: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(gameState.currentTheme.buttonColor)
+                .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(gameState.currentTheme.borderColor, lineWidth: 4)
+                .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 4)
         )
     }
 
@@ -134,51 +135,51 @@ struct HelpView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("SOFT VS HARD HANDS")
                 .font(.headline.bold())
-                .foregroundStyle(gameState.currentTheme.textColor)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
 
             VStack(alignment: .leading, spacing: 8) {
                 Text("Soft Hand")
                     .font(.subheadline.bold())
-                    .foregroundStyle(gameState.currentTheme.textColor)
+                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
                 Text("Contains an Ace counted as 11. Example: A-6 is 'Soft 17'")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme).opacity(0.6))
 
                 Text("Hard Hand")
                     .font(.subheadline.bold())
-                    .foregroundStyle(gameState.currentTheme.textColor)
+                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
                 Text("No Ace, or Ace counted as 1. Example: 10-7 is 'Hard 17'")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme).opacity(0.6))
 
                 Text("Bust")
                     .font(.subheadline.bold())
-                    .foregroundStyle(.red)
+                    .foregroundStyle(gameState.currentTheme.effectiveWrongColor(colorScheme))
                 Text("Total over 21. You lose!")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme).opacity(0.6))
             }
         }
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(gameState.currentTheme.buttonColor)
+                .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(gameState.currentTheme.borderColor, lineWidth: 4)
+                .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 4)
         )
     }
 
     private func helpRow(icon: String, text: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .foregroundStyle(gameState.currentTheme.accentColor)
+                .foregroundStyle(gameState.currentTheme.effectiveAccentColor(colorScheme))
                 .frame(width: 24)
 
             Text(text)
                 .font(.subheadline)
-                .foregroundStyle(gameState.currentTheme.textColor)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
 
             Spacer()
         }
@@ -188,12 +189,12 @@ struct HelpView: View {
         HStack {
             Text(rank)
                 .font(.subheadline.bold())
-                .foregroundStyle(gameState.currentTheme.textColor)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
                 .frame(width: 70, alignment: .leading)
 
             Text(value)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme).opacity(0.6))
 
             Spacer()
         }
