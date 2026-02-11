@@ -146,19 +146,6 @@ struct GameOverView: View {
 
     private var buttonsSection: some View {
         VStack(spacing: 16) {
-            // Replay button
-            ThickBorderButton(
-                title: "PLAY AGAIN",
-                action: { gameState.restartGame() },
-                bgColor: gameState.currentTheme.effectiveCorrectColor(colorScheme),
-                textColor: .white,
-                borderColor: gameState.currentTheme.effectiveBorderColor(colorScheme),
-                borderWidth: 4,
-                shadowOffset: 4,
-                cornerRadius: 12
-            )
-            .frame(height: 60)
-
             // Return to menu button
             ThickBorderButton(
                 title: "RETURN TO MENU",
