@@ -38,6 +38,10 @@ struct mathgameApp: App {
     var body: some Scene {
         WindowGroup {
             MenuView()
+                .task {
+                    // Authenticate with Game Center on launch
+                    await GameCenterManager.shared.authenticate()
+                }
         }
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) { oldPhase, newPhase in

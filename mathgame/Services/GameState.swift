@@ -151,14 +151,66 @@ class GameState {
             player.lifetimeStats.runsCompleted += 1
 
             // Update top scores
-            player.updateTopScores(session?.totalSessionPoints ?? 0)
+            let sessionPoints = session?.totalSessionPoints ?? 0
+            player.updateTopScores(sessionPoints)
 
             // Sync coins to persistent storage
             persistentPlayer?.totalCoinsEarned += player.coins
+
+            // Submit scores to Game Center
+            Task {
+                await GameCenterManager.shared.submitScores(
+                    highScore: sessionPoints,
+                    bestStreak: player.streak,
+                    mostCorrect: player.correctCount
+                )
+
+                // Check for achievements
+                await checkAchievements()
+            }
         }
 
         audioManager.playMusic(.gameOver)
         returnToMenu()
+    }
+
+    private func checkAchievements() async {
+        // First Steps - Answer first question (submit 100% on first correct)
+        if player.correctCount >= 1 {
+            await GameCenterManager.shared.submitAchievement(.firstSteps, percentComplete: 100)
+        }
+
+        // Streak Master - Reach 20 streak
+        if player.streak >= 20 {
+            await GameCenterManager.shared.submitAchievement(.streakMaster, percentComplete: 100)
+        }
+
+        // Millionaire - Earn 1,000,000 coins total
+        let totalCoins = persistentPlayer?.totalCoinsEarned ?? 0
+        if totalCoins >= 1_000_000 {
+            await GameCenterManager.shared.submitAchievement(.millionaire, percentComplete: 100)
+        } else {
+            let progress = Double(totalCoins) / 1_000_000.0 * 100
+            await GameCenterManager.shared.submitAchievement(.millionaire, percentComplete: progress)
+        }
+
+        // Blackjack Pro - Answer 100 blackjack hands correctly
+        let totalCorrect = persistentPlayer?.totalCorrect ?? 0
+        if totalCorrect >= 100 {
+            await GameCenterManager.shared.submitAchievement(.blackjackPro, percentComplete: 100)
+        } else {
+            let progress = Double(totalCorrect) / 100.0 * 100
+            await GameCenterManager.shared.submitAchievement(.blackjackPro, percentComplete: progress)
+        }
+
+        // Theme Collector - Unlock 5 themes
+        let unlockedCount = availableThemes.filter { $0.isUnlocked }.count
+        if unlockedCount >= 5 {
+            await GameCenterManager.shared.submitAchievement(.themeCollector, percentComplete: 100)
+        } else {
+            let progress = Double(unlockedCount) / 5.0 * 100
+            await GameCenterManager.shared.submitAchievement(.themeCollector, percentComplete: progress)
+        }
     }
 
     func restartGame() {
