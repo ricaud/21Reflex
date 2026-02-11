@@ -9,6 +9,8 @@ import SwiftUI
 
 struct MenuView: View {
     @State private var gameState = GameState.shared
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.modelContext) private var modelContext
 
     // Card animation states
     @State private var kingDealt = false
@@ -23,12 +25,15 @@ struct MenuView: View {
         NavigationStack(path: $gameState.navigationPath) {
             ZStack {
                 // Background
-                gameState.currentTheme.bgColor
+                gameState.currentTheme.effectiveBgColor(colorScheme)
                     .ignoresSafeArea()
 
                 VStack(spacing: 20) {
-                    // Title - always visible
+                    // Title and coins - always visible
                     titleSection
+
+                    // Coin balance
+                    coinBalanceSection
 
                     Spacer()
 
@@ -36,7 +41,7 @@ struct MenuView: View {
                     floatingCardsSection
 
                     Spacer()
-                    
+
                     // Play button - always visible
                     playButtonSection
 
@@ -47,7 +52,7 @@ struct MenuView: View {
 
                     // Bottom toolbar - always visible
                     bottomToolbar.padding(.bottom)
-                    
+
                     //ads here 👹
 
                 }
@@ -65,6 +70,8 @@ struct MenuView: View {
                         SettingsView()
                     case .help:
                         HelpView()
+                    case .themes:
+                        ThemeStoreView()
                     case .menu:
                         EmptyView()
                 }
@@ -93,6 +100,22 @@ struct MenuView: View {
                     floatingOffset = -10
                 }
             }
+
+            // Setup persistent player reference
+            setupPersistentPlayer()
+        }
+    }
+
+    private func setupPersistentPlayer() {
+        let descriptor = FetchDescriptor<PersistentPlayer>()
+        if let player = try? modelContext.fetch(descriptor).first {
+            gameState.persistentPlayer = player
+            gameState.loadThemeFromPersistentStorage()
+        } else {
+            // Create new persistent player
+            let newPlayer = PersistentPlayer()
+            modelContext.insert(newPlayer)
+            gameState.persistentPlayer = newPlayer
         }
     }
 
@@ -119,36 +142,57 @@ struct MenuView: View {
         VStack(spacing: 8) {
             // Decorative line
             Rectangle()
-                .fill(gameState.currentTheme.accentColor)
+                .fill(gameState.currentTheme.effectiveAccentColor(colorScheme))
                 .frame(height: 8)
                 .clipShape(RoundedRectangle(cornerRadius: 4))
                 .overlay(
                     RoundedRectangle(cornerRadius: 4)
-                        .stroke(gameState.currentTheme.borderColor, lineWidth: 3)
+                        .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 3)
                 )
 
             // Title
             Text("CARD COUNT")
                 .font(.system(size: 44, weight: .black, design: .rounded))
-                .foregroundStyle(gameState.currentTheme.textColor)
-                .shadow(color: gameState.currentTheme.borderColor, radius: 0, x: 3, y: 3)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
+                .shadow(color: gameState.currentTheme.effectiveBorderColor(colorScheme), radius: 0, x: 3, y: 3)
 
             // Subtitle
             Text("PRACTICE BLACKJACK CARD COUNTING")
                 .font(.caption.bold())
-                .foregroundStyle(gameState.currentTheme.textColor)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(
                     Capsule()
-                        .fill(gameState.currentTheme.buttonColor)
+                        .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
                 )
                 .overlay(
                     Capsule()
-                        .stroke(gameState.currentTheme.borderColor, lineWidth: 3)
+                        .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 3)
                 )
-
         }
+    }
+
+    private var coinBalanceSection: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "dollarsign.circle.fill")
+                .font(.title3)
+                .foregroundStyle(.yellow)
+
+            Text("\(gameState.persistentPlayer?.availableCoins ?? 0)")
+                .font(.headline.bold())
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(
+            Capsule()
+                .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
+        )
+        .overlay(
+            Capsule()
+                .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 2)
+        )
     }
 
     private var playButtonSection: some View {
@@ -157,7 +201,7 @@ struct MenuView: View {
             action: { gameState.startGame() },
             bgColor: Color(red: 0.2, green: 0.6, blue: 0.3),
             textColor: .white,
-            borderColor: gameState.currentTheme.borderColor,
+            borderColor: gameState.currentTheme.effectiveBorderColor(colorScheme),
             borderWidth: 4,
             shadowOffset: 4,
             cornerRadius: 10
@@ -171,9 +215,9 @@ struct MenuView: View {
         ThickBorderButton(
             title: "PRACTICE",
             action: { gameState.startPracticeMode() },
-            bgColor: gameState.currentTheme.buttonColor,
-            textColor: gameState.currentTheme.textColor,
-            borderColor: gameState.currentTheme.borderColor,
+            bgColor: gameState.currentTheme.effectiveButtonColor(colorScheme),
+            textColor: gameState.currentTheme.effectiveTextColor(colorScheme),
+            borderColor: gameState.currentTheme.effectiveBorderColor(colorScheme),
             borderWidth: 3,
             shadowOffset: 2,
             cornerRadius: 10
@@ -184,9 +228,13 @@ struct MenuView: View {
     }
 
     private var bottomToolbar: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             toolbarButton(title: "STATS", icon: "chart.bar.fill", action: {
                 gameState.navigate(to: .stats)
+            })
+
+            toolbarButton(title: "THEMES", icon: "paintbrush.fill", action: {
+                gameState.navigate(to: .themes)
             })
 
             toolbarButton(title: "SETTINGS", icon: "gear", action: {
@@ -199,13 +247,13 @@ struct MenuView: View {
             }) {
                 Text("?")
                     .font(.title2.bold())
-                    .foregroundStyle(gameState.currentTheme.textColor)
+                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
                     .frame(width: 45, height: 45)
-                    .background(gameState.currentTheme.buttonColor)
+                    .background(gameState.currentTheme.effectiveButtonColor(colorScheme))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
-                            .stroke(gameState.currentTheme.borderColor, lineWidth: 3)
+                            .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 3)
                     )
             }
         }
@@ -219,14 +267,14 @@ struct MenuView: View {
                 Text(title)
                     .font(.caption.bold())
             }
-            .foregroundStyle(gameState.currentTheme.textColor)
+            .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
             .frame(maxWidth: .infinity)
             .frame(height: 50)
-            .background(gameState.currentTheme.buttonColor)
+            .background(gameState.currentTheme.effectiveButtonColor(colorScheme))
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(gameState.currentTheme.borderColor, lineWidth: 3)
+                    .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 3)
             )
         }
         .accessibilityLabel(title)
