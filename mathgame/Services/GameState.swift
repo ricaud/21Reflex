@@ -21,6 +21,7 @@ class GameState {
         case stats
         case settings
         case help
+        case themes
     }
 
     var navigationPath: [Screen] = []
@@ -46,7 +47,31 @@ class GameState {
     // MARK: - Game Mode
     var isPracticeMode: Bool = false
 
+    // MARK: - Persistent Player (set from outside)
+    weak var persistentPlayer: PersistentPlayer?
+
     private init() {}
+
+    // MARK: - Theme Management
+
+    func loadThemeFromPersistentStorage() {
+        guard let persistentPlayer = persistentPlayer else { return }
+
+        // Find the equipped theme
+        if let theme = availableThemes.first(where: { $0.id == persistentPlayer.equippedThemeID }) {
+            // Unequip all themes first
+            availableThemes.forEach { $0.isEquipped = false }
+
+            // Equip the saved theme
+            theme.isEquipped = true
+            theme.isUnlocked = true
+            currentTheme = theme
+        }
+    }
+
+    func saveThemeToPersistentStorage() {
+        persistentPlayer?.equippedThemeID = currentTheme.id
+    }
 
     // MARK: - Navigation
     func navigate(to screen: Screen) {
@@ -127,6 +152,9 @@ class GameState {
 
             // Update top scores
             player.updateTopScores(session?.totalSessionPoints ?? 0)
+
+            // Sync coins to persistent storage
+            persistentPlayer?.totalCoinsEarned += player.coins
         }
 
         audioManager.playMusic(.gameOver)
