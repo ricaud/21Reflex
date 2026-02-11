@@ -56,40 +56,46 @@ class GameCenterManager {
 
     // MARK: - Authentication
 
-    func authenticate() async {
-        do {
-            let authResult = try await GKLocalPlayer.local.authenticate()
+    func authenticate() {
+        GKLocalPlayer.local.authenticateHandler = { [weak self] viewController, error in
+            guard let self = self else { return }
 
-            if let viewController = authResult.viewController {
+            if let viewController = viewController {
                 // Need to present view controller for authentication
-                // This will be handled by the caller
-                authenticationError = "Please sign in to Game Center"
-                isAuthenticated = false
-            } else if authResult.isAuthenticated {
-                localPlayer = GKLocalPlayer.local
-                isAuthenticated = true
-                authenticationError = nil
+                // Store reference for later presentation
+                self.authenticationError = "Please sign in to Game Center"
+                self.isAuthenticated = false
+                // The view controller should be presented by the app's root view controller
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let rootVC = windowScene.windows.first?.rootViewController {
+                    rootVC.present(viewController, animated: true)
+                }
+            } else if let error = error {
+                self.authenticationError = error.localizedDescription
+                self.isAuthenticated = false
+            } else {
+                // Successfully authenticated
+                self.localPlayer = GKLocalPlayer.local
+                self.isAuthenticated = true
+                self.authenticationError = nil
             }
-        } catch {
-            authenticationError = error.localizedDescription
-            isAuthenticated = false
         }
     }
 
-    func authenticateWithPresentingViewController(_ viewController: UIViewController) async {
-        do {
-            let authResult = try await GKLocalPlayer.local.authenticate()
+    func authenticateWithPresentingViewController(_ viewController: UIViewController) {
+        GKLocalPlayer.local.authenticateHandler = { [weak self] authViewController, error in
+            guard let self = self else { return }
 
-            if let authVC = authResult.viewController {
-                viewController.present(authVC, animated: true)
-            } else if authResult.isAuthenticated {
-                localPlayer = GKLocalPlayer.local
-                isAuthenticated = true
-                authenticationError = nil
+            if let authViewController = authViewController {
+                viewController.present(authViewController, animated: true)
+            } else if let error = error {
+                self.authenticationError = error.localizedDescription
+                self.isAuthenticated = false
+            } else {
+                self.localPlayer = GKLocalPlayer.local
+                self.isAuthenticated = true
+                self.authenticationError = nil
             }
-        } catch {
-            authenticationError = error.localizedDescription
-            isAuthenticated = false
         }
     }
 

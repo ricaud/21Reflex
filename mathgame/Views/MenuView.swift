@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MenuView: View {
     @State private var gameState = GameState.shared

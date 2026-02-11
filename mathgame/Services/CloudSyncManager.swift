@@ -55,23 +55,28 @@ class CloudSyncManager {
 
     private func checkICloudAvailability() {
         container.accountStatus { [weak self] status, error in
-            Task { @MainActor in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
                 switch status {
                 case .available:
-                    self?.isICloudAvailable = true
-                    self?.syncStatus = .unknown
+                    self.isICloudAvailable = true
+                    self.syncStatus = .unknown
                 case .noAccount:
-                    self?.isICloudAvailable = false
-                    self?.syncStatus = .disabled
+                    self.isICloudAvailable = false
+                    self.syncStatus = .disabled
                 case .restricted:
-                    self?.isICloudAvailable = false
-                    self?.syncStatus = .disabled
+                    self.isICloudAvailable = false
+                    self.syncStatus = .disabled
                 case .couldNotDetermine:
-                    self?.isICloudAvailable = false
-                    self?.syncStatus = .error("Could not determine iCloud status")
+                    self.isICloudAvailable = false
+                    if let error = error {
+                        self.syncStatus = .error(error.localizedDescription)
+                    } else {
+                        self.syncStatus = .error("Could not determine iCloud status")
+                    }
                 @unknown default:
-                    self?.isICloudAvailable = false
-                    self?.syncStatus = .error("Unknown iCloud status")
+                    self.isICloudAvailable = false
+                    self.syncStatus = .error("Unknown iCloud status")
                 }
             }
         }
@@ -98,10 +103,9 @@ class CloudSyncManager {
     }
 
     @objc private func handleKVStoreChange(_ notification: Notification) {
-        // Key-value store changed externally, sync from iCloud
-        Task { @MainActor in
-            await syncFromiCloud()
-        }
+        // Key-value store changed externally, update local settings
+        // The settings are automatically synced via NSUbiquitousKeyValueStore
+        // Just need to reload from UserDefaults/iCloud
     }
 
     @objc private func handleAccountChange(_ notification: Notification) {
@@ -138,10 +142,16 @@ class CloudSyncManager {
 
         do {
             let record = try createCKRecord(from: player)
-            let (_, saveResult) = try await privateDatabase.modifyRecords(saving: [record], deleting: [])
+            let (saveResults, _) = try await privateDatabase.modifyRecords(saving: [record], deleting: [])
 
-            if let error = saveResult[record.recordID] {
-                throw error
+            // Check results
+            for (recordID, result) in saveResults {
+                switch result {
+                case .success:
+                    print("Successfully saved record: \(recordID)")
+                case .failure(let error):
+                    throw error
+                }
             }
 
             lastSyncDate = Date()
@@ -158,17 +168,22 @@ class CloudSyncManager {
 
         do {
             let query = CKQuery(recordType: "PersistentPlayer", predicate: NSPredicate(value: true))
-            let (results, _) = try await privateDatabase.records(matching: query)
+            let (matchResults, _) = try await privateDatabase.records(matching: query)
 
-            guard let record = results.first?.1 else {
+            guard let firstResult = matchResults.first else {
                 syncStatus = .synced
                 return nil
             }
 
-            let player = try createPersistentPlayer(from: record)
-            lastSyncDate = Date()
-            syncStatus = .synced
-            return player
+            switch firstResult.value {
+            case .success(let record):
+                let player = try createPersistentPlayer(from: record)
+                lastSyncDate = Date()
+                syncStatus = .synced
+                return player
+            case .failure(let error):
+                throw error
+            }
         } catch {
             syncStatus = .error(error.localizedDescription)
             return nil
