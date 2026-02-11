@@ -175,7 +175,8 @@ class CloudSyncManager {
                 return nil
             }
 
-            switch firstResult.value {
+            let (_, result) = firstResult
+            switch result {
             case .success(let record):
                 let player = try createPersistentPlayer(from: record)
                 lastSyncDate = Date()
