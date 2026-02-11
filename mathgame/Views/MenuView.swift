@@ -10,6 +10,15 @@ import SwiftUI
 struct MenuView: View {
     @State private var gameState = GameState.shared
 
+    // Card animation states
+    @State private var kingDealt = false
+    @State private var aceDealt = false
+    @State private var floatingOffset: CGFloat = 0
+
+    // Card models
+    let kingOfHearts = Card(suit: .hearts, rank: .king)
+    let aceOfSpades = Card(suit: .spades, rank: .ace)
+
     var body: some View {
         NavigationStack(path: $gameState.navigationPath) {
             ZStack {
@@ -18,37 +27,92 @@ struct MenuView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 20) {
-                    // Title
+                    // Title - always visible
                     titleSection
-
-                    // Play button
-                    playButtonSection
 
                     Spacer()
 
-                    // Bottom toolbar
-                    bottomToolbar
+                    // Floating cards - animate in with deal effect
+                    floatingCardsSection
+
+                    Spacer()
+                    
+                    // Play button - always visible
+                    playButtonSection
+
+                    // Practice button - always visible
+                    practiceButtonSection
+
+                    Spacer()
+
+                    // Bottom toolbar - always visible
+                    bottomToolbar.padding(.bottom)
+                    
+                    //ads here 👹
+
                 }
                 .padding()
             }
             .navigationDestination(for: GameState.Screen.self) { screen in
                 switch screen {
-                case .game:
-                    GameView()
-                case .stats:
-                    StatsView()
-                case .settings:
-                    SettingsView()
-                case .help:
-                    HelpView()
-                case .menu:
-                    EmptyView()
+                    case .game:
+                        GameView()
+                    case .gameOver:
+                        EmptyView()
+                    case .stats:
+                        StatsView()
+                    case .settings:
+                        SettingsView()
+                    case .help:
+                        HelpView()
+                    case .menu:
+                        EmptyView()
                 }
             }
         }
         .onAppear {
             gameState.audioManager.playMusic(.menu)
+
+            // Deal King of Hearts first
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                withAnimation(.easeOut(duration: 0.5)) {
+                    kingDealt = true
+                }
+            }
+
+            // Deal Ace of Spades second (0.2s delay after King)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+                withAnimation(.easeOut(duration: 0.5)) {
+                    aceDealt = true
+                }
+            }
+
+            // Start floating animation after both cards dealt
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.3) {
+                withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+                    floatingOffset = -10
+                }
+            }
         }
+    }
+
+    private var floatingCardsSection: some View {
+        HStack(spacing: -30) {
+            // King of Hearts - slides in from left
+            PlayingCardView(card: kingOfHearts)
+                .frame(width: 140, height: 191)
+                .rotationEffect(.degrees(-5))
+                .offset(x: kingDealt ? 0 : -500)
+                .animation(.easeOut(duration: 0.5), value: kingDealt)
+
+            // Ace of Spades - slides in from left (dealt second)
+            PlayingCardView(card: aceOfSpades)
+                .frame(width: 140, height: 191)
+                .rotationEffect(.degrees(5))
+                .offset(x: aceDealt ? 0 : -500)
+                .animation(.easeOut(duration: 0.5), value: aceDealt)
+        }
+        .offset(y: floatingOffset)
     }
 
     private var titleSection: some View {
@@ -103,6 +167,22 @@ struct MenuView: View {
         .accessibilityHint("Start a new blackjack card counting game")
     }
 
+    private var practiceButtonSection: some View {
+        ThickBorderButton(
+            title: "PRACTICE",
+            action: { gameState.startPracticeMode() },
+            bgColor: gameState.currentTheme.buttonColor,
+            textColor: gameState.currentTheme.textColor,
+            borderColor: gameState.currentTheme.borderColor,
+            borderWidth: 3,
+            shadowOffset: 2,
+            cornerRadius: 10
+        )
+        .frame(width: 275, height: 45)
+        .accessibilityLabel("Practice Mode")
+        .accessibilityHint("Practice without timers or penalties")
+    }
+
     private var bottomToolbar: some View {
         HStack(spacing: 12) {
             toolbarButton(title: "STATS", icon: "chart.bar.fill", action: {
@@ -120,7 +200,7 @@ struct MenuView: View {
                 Text("?")
                     .font(.title2.bold())
                     .foregroundStyle(gameState.currentTheme.textColor)
-                    .frame(width: 44, height: 44)
+                    .frame(width: 45, height: 45)
                     .background(gameState.currentTheme.buttonColor)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .overlay(

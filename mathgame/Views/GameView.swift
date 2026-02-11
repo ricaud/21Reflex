@@ -15,6 +15,8 @@ struct GameView: View {
     @State private var feedbackColor: Color = .green
     @State private var shakeOffset: CGFloat = 0
     @State private var isMuted = false
+    @State private var pointsEarned = 0
+    @State private var showBonusAnimation = false
 
     var body: some View {
         ZStack {
@@ -26,12 +28,14 @@ struct GameView: View {
                 // Header
                 headerSection
 
-                // Timer bar
-                TimerBar(progress: timerProgress)
-                    .padding(.horizontal)
-                    .accessibilityElement()
-                    .accessibilityLabel("Time remaining")
-                    .accessibilityValue("\(Int(gameState.session?.timeRemaining ?? 0)) seconds")
+                // Timer bar (hidden in practice mode)
+                if !gameState.isPracticeMode {
+                    TimerBar(progress: timerProgress)
+                        .padding(.horizontal)
+                        .accessibilityElement()
+                        .accessibilityLabel("Time remaining")
+                        .accessibilityValue("\(Int(gameState.session?.timeRemaining ?? 0)) seconds")
+                }
 
                 // Cards display
                 cardsSection
@@ -41,12 +45,53 @@ struct GameView: View {
                     .font(.headline)
                     .foregroundStyle(gameState.currentTheme.textColor)
 
-                // Feedback
-                Text(feedbackText)
-                    .font(.title.bold())
+                // Feedback display
+                if gameState.isPracticeMode {
+                    // Practice mode: simple single-line feedback
+                    VStack(spacing: 8) {
+                        Text(feedbackText)
+                            .font(.title.bold())
+                            .foregroundStyle(feedbackColor)
+
+                        // Simple BONUS text (no gold, no +2)
+                        Text("BONUS")
+                            .font(.headline.bold())
+                            .foregroundStyle(feedbackColor)
+                            .opacity(showBonusAnimation ? 1 : 0)
+                            .animation(.easeOut(duration: 0.2), value: showBonusAnimation)
+                    }
+                    .opacity(showFeedback ? 1 : 0)
+                    .scaleEffect(showFeedback ? 1.0 : 0.9)
+                    .animation(.easeOut(duration: 0.2), value: showFeedback)
+                    .frame(height: 80)
+                } else {
+                    // Normal mode: two-line feedback with points
+                    VStack(spacing: 4) {
+                        Text(feedbackText)
+                            .font(.title.bold())
+                        Text("+\(pointsEarned) points")
+                            .font(.title2.bold())
+                    }
                     .foregroundStyle(feedbackColor)
                     .opacity(showFeedback ? 1 : 0)
-                    .frame(height: 40)
+                    .scaleEffect(showFeedback ? 1.0 : 0.9)
+                    .animation(.easeOut(duration: 0.2), value: showFeedback)
+                    .frame(height: 60)
+
+                    // Gold bonus animation
+                    Text("+2 BONUS!")
+                        .font(.headline.bold().italic())
+                        .foregroundStyle(Color(red: 1.0, green: 0.84, blue: 0.0))
+                        .shadow(color: .black, radius: 0.5, x: 0, y: 0)
+                        .shadow(color: .black, radius: 0.5, x: 0.5, y: 0)
+                        .shadow(color: .black, radius: 0.5, x: -0.5, y: 0)
+                        .shadow(color: .black, radius: 0.5, x: 0, y: 0.5)
+                        .shadow(color: .black, radius: 0.5, x: 0, y: -0.5)
+                        .opacity(showBonusAnimation ? 1 : 0)
+                        .offset(y: showBonusAnimation ? -5 : 0)
+                        .animation(.easeOut(duration: 0.2), value: showBonusAnimation)
+                        .frame(height: 30)
+                }
 
                 // Answer buttons
                 answerButtonsSection
@@ -129,6 +174,24 @@ struct GameView: View {
 
             // Streak
             StreakBadge(streak: gameState.player.streak)
+
+            // Points (hidden in practice mode)
+            if !gameState.isPracticeMode, let session = gameState.session {
+                HStack(spacing: 4) {
+                    Text("\(session.currentRoundPoints)")
+                        .font(.headline.bold())
+                        .foregroundStyle(gameState.currentTheme.textColor)
+                    Text("pts")
+                        .font(.caption)
+                        .foregroundStyle(gameState.currentTheme.textColor.opacity(0.7))
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(gameState.currentTheme.buttonColor)
+                )
+            }
         }
         .padding(.horizontal)
     }
@@ -139,49 +202,21 @@ struct GameView: View {
     }
 
     private var cardsSection: some View {
-        VStack(spacing: 8) {
-            // Cards display
-            HStack(spacing: -25) {
-                if let session = gameState.session {
-                    ForEach(session.currentCards) { card in
-                        PlayingCardView(card: card)
-                            .transition(.asymmetric(
-                                insertion: .offset(x: 50).combined(with: .opacity),
-                                removal: .opacity
-                            ))
-                    }
+        HStack(spacing: -25) {
+            if let session = gameState.session {
+                ForEach(session.currentCards) { card in
+                    PlayingCardView(card: card, animateOnAppear: true)
+                        .frame(width: 70, height: 100)
+                        .transition(.asymmetric(
+                            insertion: .offset(x: 50).combined(with: .opacity),
+                            removal: .opacity
+                        ))
                 }
             }
-            .frame(height: 110)
-            .padding(.horizontal, 30)
-            .padding(.vertical, 10)
-
-            // Show current hand value with soft/hard/bust indicator
-            if let session = gameState.session {
-                let handValue = session.handValue
-                Text(handValue.displayText)
-                    .font(.caption.bold())
-                    .foregroundStyle(
-                        handValue.isBust ? .red :
-                        (handValue.isSoft ? Color(red: 0.2, green: 0.8, blue: 0.3) : gameState.currentTheme.textColor)
-                    )
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 4)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(gameState.currentTheme.bgColor.opacity(0.8))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(
-                                handValue.isBust ? Color.red.opacity(0.5) :
-                                (handValue.isSoft ? Color.green.opacity(0.5) : Color.clear),
-                                lineWidth: 1
-                            )
-                    )
-            }
         }
-        .padding()
+        .frame(height: 110)
+        .padding(.horizontal, 30)
+        .padding(.vertical, 20)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(gameState.currentTheme.buttonColor)
@@ -193,17 +228,37 @@ struct GameView: View {
     }
 
     private var answerButtonsSection: some View {
+        let isTimerExpired = gameState.session?.timeRemaining ?? 1 <= 0
+        let options = gameState.session?.answerOptions ?? []
+        let numericOptions = options.filter { option in
+            if case .value = option.type { return true }
+            return false
+        }
+        let specialOptions = options.filter { option in
+            if case .bust = option.type { return true }
+            if case .blackjack = option.type { return true }
+            return false
+        }
+
+        return VStack(spacing: 16) {
+            // Numeric options in 2x2 grid
+            numericButtonsGrid(options: numericOptions, isTimerExpired: isTimerExpired)
+
+            // Special buttons (Bust and Blackjack) - full width horizontal
+            specialButtonsRow(options: specialOptions, isTimerExpired: isTimerExpired)
+        }
+    }
+
+    private func numericButtonsGrid(options: [BlackjackSession.AnswerOption], isTimerExpired: Bool) -> some View {
         let columns = [
             GridItem(.flexible()),
             GridItem(.flexible())
         ]
 
-        let isTimerExpired = gameState.session?.timeRemaining ?? 1 <= 0
-
         return LazyVGrid(columns: columns, spacing: 16) {
-            ForEach(gameState.session?.answerOptions ?? []) { option in
+            ForEach(options) { option in
                 ThickBorderButton(
-                    title: "\(option.value)",
+                    title: option.displayText,
                     action: { handleAnswer(option) },
                     bgColor: buttonColor(for: option),
                     textColor: gameState.currentTheme.textColor,
@@ -216,8 +271,31 @@ struct GameView: View {
                 .frame(height: 90)
                 .disabled(isTimerExpired)
                 .opacity(isTimerExpired ? 0.5 : 1)
-                .accessibilityLabel("Answer option \(option.value)")
+                .accessibilityLabel("Answer option \(option.displayText)")
                 .accessibilityHint("Select this as the total card value")
+            }
+        }
+    }
+
+    private func specialButtonsRow(options: [BlackjackSession.AnswerOption], isTimerExpired: Bool) -> some View {
+        HStack(spacing: 16) {
+            ForEach(options) { option in
+                ThickBorderButton(
+                    title: option.displayText,
+                    action: { handleAnswer(option) },
+                    bgColor: buttonColor(for: option),
+                    textColor: gameState.currentTheme.textColor,
+                    borderColor: gameState.currentTheme.borderColor,
+                    borderWidth: 4,
+                    shadowOffset: 5,
+                    cornerRadius: 12,
+                    font: .system(size: 20, weight: .bold)
+                )
+                .frame(height: 60)
+                .disabled(isTimerExpired)
+                .opacity(isTimerExpired ? 0.5 : 1)
+                .accessibilityLabel("Answer option \(option.displayText)")
+                .accessibilityHint(option.type == .bust ? "Select if hand is bust" : "Select if hand is blackjack")
             }
         }
     }
@@ -233,10 +311,33 @@ struct GameView: View {
         selectedAnswer = option
 
         if option.isCorrect {
-            // Correct answer
-            feedbackText = "CORRECT!"
-            feedbackColor = gameState.currentTheme.correctColor
-            showFeedback = true
+            // Calculate and award points
+            if let session = gameState.session {
+                let points = session.calculatePoints(for: option)
+                let basePoints = max(1, 10 - Int(Date().timeIntervalSince(session.answerStartTime)))
+                let hasBonus = points > basePoints
+
+                session.awardPoints(points)
+                pointsEarned = points
+
+                // Show combined feedback
+                feedbackText = gameState.isPracticeMode ? "CORRECT" : "CORRECT!"
+                feedbackColor = gameState.currentTheme.correctColor
+                showFeedback = true
+                showBonusAnimation = hasBonus
+
+                // Hide animations after delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    withAnimation(.easeIn(duration: 0.3)) {
+                        showFeedback = false
+                        showBonusAnimation = false
+                    }
+                }
+            } else {
+                feedbackText = "CORRECT!"
+                feedbackColor = gameState.currentTheme.correctColor
+                showFeedback = true
+            }
 
             gameState.player.handleCorrectAnswer()
             gameState.audioManager.playSound(.correct)
@@ -249,8 +350,9 @@ struct GameView: View {
                 resetFeedback()
             }
         } else {
-            // Wrong answer
-            feedbackText = "WRONG!"
+            // Wrong answer - show INCORRECT in red
+            pointsEarned = 0
+            feedbackText = "INCORRECT"
             feedbackColor = gameState.currentTheme.wrongColor
             showFeedback = true
 
@@ -265,19 +367,35 @@ struct GameView: View {
                 shakeOffset = 0
             }
 
-            // Handle wrong answer through player
-            let result = gameState.player.handleWrongAnswer()
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                switch result {
-                case .gameOver:
-                    gameState.endGame()
-                case .shieldUsed, .luckySave, .secondChanceUsed:
-                    gameState.session?.handleWrongAnswer()
-                case .normal:
-                    gameState.session?.handleWrongAnswer()
+            // Hide feedback after delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                withAnimation(.easeIn(duration: 0.3)) {
+                    showFeedback = false
                 }
-                resetFeedback()
+            }
+
+            // In practice mode: no health penalty, just continue
+            // In normal mode: handle wrong answer with health penalty
+            if gameState.isPracticeMode {
+                // Just reset streak and continue
+                gameState.player.streak = 0
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    gameState.session?.handleWrongAnswer()
+                    resetFeedback()
+                }
+            } else {
+                let result = gameState.player.handleWrongAnswer()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    switch result {
+                    case .gameOver:
+                        gameState.endGame()
+                    case .shieldUsed, .luckySave, .secondChanceUsed:
+                        gameState.session?.handleWrongAnswer()
+                    case .normal:
+                        gameState.session?.handleWrongAnswer()
+                    }
+                    resetFeedback()
+                }
             }
         }
     }
@@ -285,6 +403,7 @@ struct GameView: View {
     private func resetFeedback() {
         showFeedback = false
         selectedAnswer = nil
+        showBonusAnimation = false
     }
 }
 

@@ -43,6 +43,9 @@ class GameState {
     // MARK: - Settings Navigation
     var showSettingsInPause: Bool = false
 
+    // MARK: - Game Mode
+    var isPracticeMode: Bool = false
+
     private init() {}
 
     // MARK: - Navigation
@@ -67,9 +70,10 @@ class GameState {
 
     // MARK: - Game Flow
     func startGame() {
+        isPracticeMode = false
         player.resetForRun()
 
-        session = BlackjackSession()
+        session = BlackjackSession(isPracticeMode: false)
         session?.onTimerExpire = { [weak self] in
             Task { @MainActor in
                 self?.handleBlackjackTimeExpired()
@@ -81,7 +85,21 @@ class GameState {
         navigate(to: .game)
     }
 
+    func startPracticeMode() {
+        isPracticeMode = true
+        player.resetForRun()
+
+        session = BlackjackSession(isPracticeMode: true)
+        session?.start()
+
+        audioManager.playMusic(.playing)
+        navigate(to: .game)
+    }
+
     func handleBlackjackTimeExpired() {
+        // No timer expiration in practice mode
+        guard !isPracticeMode else { return }
+
         let result = player.handleWrongAnswer()
 
         switch result {
@@ -102,8 +120,14 @@ class GameState {
     func endGame() {
         session?.endGame()
 
-        // Update lifetime stats
-        player.lifetimeStats.runsCompleted += 1
+        // Only update stats and scores in normal mode
+        if !isPracticeMode {
+            // Update lifetime stats
+            player.lifetimeStats.runsCompleted += 1
+
+            // Update top scores
+            player.updateTopScores(session?.totalSessionPoints ?? 0)
+        }
 
         audioManager.playMusic(.gameOver)
         returnToMenu()

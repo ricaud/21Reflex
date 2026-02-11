@@ -16,20 +16,60 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="MATH RUSH" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="app-name">
-                                <rect key="frame" x="20" y="408" width="353" height="36"/>
-                                <fontDescription key="fontDescription" type="system" weight="black" pointSize="30"/>
-                                <color key="textColor" red="0.15" green="0.15" blue="0.2" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <!-- Decorative line -->
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="decorative-line">
+                                <rect key="frame" x="20" y="375" width="353" height="8"/>
+                                <color key="backgroundColor" red="0.85" green="0.82" blue="0.76" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="8" id="line-height"/>
+                                </constraints>
+                            </view>
+                            <!-- Title -->
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="CARD COUNT" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="app-name">
+                                <rect key="frame" x="20" y="391" width="353" height="53"/>
+                                <fontDescription key="fontDescription" type="system" weight="black" pointSize="44"/>
+                                <color key="textColor" red="0.15" green="0.15" blue="0.15" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <!-- Subtitle -->
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="PRACTICE BLACKJACK CARD COUNTING" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="app-subtitle">
+                                <rect key="frame" x="46" y="452" width="301" height="28"/>
+                                <fontDescription key="fontDescription" type="system" weight="bold" pointSize="12"/>
+                                <color key="textColor" red="0.15" green="0.15" blue="0.15" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <!-- Subtitle background -->
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="subtitle-bg">
+                                <rect key="frame" x="46" y="452" width="301" height="28"/>
+                                <color key="backgroundColor" red="0.92" green="0.92" blue="0.90" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="28" id="subtitle-height"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
-                        <color key="backgroundColor" red="0.95" green="0.95" blue="0.97" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" red="0.95" green="0.95" blue="0.90" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <!-- Decorative line constraints -->
+                            <constraint firstItem="decorative-line" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="line-cx"/>
+                            <constraint firstItem="decorative-line" firstAttribute="bottom" secondItem="app-name" secondAttribute="top" constant="-8" id="line-bottom"/>
+                            <constraint firstItem="decorative-line" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="line-leading"/>
+                            <constraint firstItem="decorative-line" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" constant="-20" id="line-trailing"/>
+                            <!-- Title constraints -->
                             <constraint firstItem="app-name" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="name-cx"/>
-                            <constraint firstItem="app-name" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="name-cy"/>
+                            <constraint firstItem="app-name" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" constant="-8" id="name-cy"/>
                             <constraint firstItem="app-name" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="name-leading"/>
                             <constraint firstItem="app-name" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" constant="-20" id="name-trailing"/>
+                            <!-- Subtitle background constraints -->
+                            <constraint firstItem="subtitle-bg" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="subtitle-bg-cx"/>
+                            <constraint firstItem="subtitle-bg" firstAttribute="top" secondItem="app-name" secondAttribute="bottom" constant="8" id="subtitle-bg-top"/>
+                            <constraint firstItem="subtitle-bg" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="subtitle-bg-leading"/>
+                            <constraint firstItem="subtitle-bg" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="6Tk-OE-BBY" secondAttribute="trailing" constant="-20" id="subtitle-bg-trailing"/>
+                            <!-- Subtitle constraints -->
+                            <constraint firstItem="app-subtitle" firstAttribute="centerX" secondItem="subtitle-bg" secondAttribute="centerX" id="subtitle-cx"/>
+                            <constraint firstItem="app-subtitle" firstAttribute="centerY" secondItem="subtitle-bg" secondAttribute="centerY" id="subtitle-cy"/>
+                            <constraint firstItem="app-subtitle" firstAttribute="leading" secondItem="subtitle-bg" secondAttribute="leading" constant="16" id="subtitle-leading"/>
+                            <constraint firstItem="app-subtitle" firstAttribute="trailing" secondItem="subtitle-bg" secondAttribute="trailing" constant="-16" id="subtitle-trailing"/>
                         </constraints>
                     </view>
                 </viewController>

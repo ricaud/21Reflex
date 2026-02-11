@@ -23,6 +23,9 @@ struct StatsView: View {
 
                     // Statistics grid
                     statisticsSection
+
+                    // Top scores section
+                    topScoresSection
                 }
                 .padding()
             }
@@ -96,6 +99,86 @@ struct StatsView: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(gameState.currentTheme.borderColor, lineWidth: 4)
         )
+    }
+
+    private var topScoresSection: some View {
+        VStack(spacing: 16) {
+            Text("TOP SCORES")
+                .font(.headline.bold())
+                .foregroundStyle(gameState.currentTheme.textColor)
+
+            VStack(spacing: 12) {
+                ForEach(0..<3, id: \.self) { index in
+                    topScoreRow(index: index)
+                }
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(gameState.currentTheme.buttonColor)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(gameState.currentTheme.borderColor, lineWidth: 4)
+        )
+    }
+
+    private func topScoreRow(index: Int) -> some View {
+        let topScores = gameState.player.highScore.topScores
+        let hasScore = index < topScores.count
+
+        return HStack {
+            // Medal icon
+            Image(systemName: medalIcon(for: index))
+                .font(.title3)
+                .foregroundStyle(medalColor(for: index))
+                .frame(width: 30)
+
+            Text("\(index + 1)\(ordinalSuffix(index))")
+                .font(.subheadline.bold())
+                .foregroundStyle(gameState.currentTheme.textColor)
+
+            Spacer()
+
+            if hasScore {
+                Text("\(topScores[index]) pts")
+                    .font(.title3.bold())
+                    .foregroundStyle(gameState.currentTheme.textColor)
+            } else {
+                Text("-")
+                    .font(.title3.bold())
+                    .foregroundStyle(gameState.currentTheme.textColor.opacity(0.3))
+            }
+        }
+        .padding(.horizontal, 8)
+    }
+
+    private func medalIcon(for index: Int) -> String {
+        switch index {
+        case 0: return "medal.fill"
+        case 1: return "medal.fill"
+        case 2: return "medal.fill"
+        default: return "circle"
+        }
+    }
+
+    private func medalColor(for index: Int) -> Color {
+        switch index {
+        case 0: return .yellow  // Gold
+        case 1: return .gray    // Silver
+        case 2: return .orange  // Bronze
+        default: return .clear
+        }
+    }
+
+    private func ordinalSuffix(_ index: Int) -> String {
+        switch index {
+        case 0: return "st"
+        case 1: return "nd"
+        case 2: return "rd"
+        default: return "th"
+        }
     }
 
     private func statCard(icon: String, iconColor: Color, value: String, label: String) -> some View {

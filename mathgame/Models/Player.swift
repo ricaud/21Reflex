@@ -16,6 +16,7 @@ class Player {
     var streak: Int = 0
     var correctCount: Int = 0
     var wrongCount: Int = 0
+    var coins: Int = 0
 
     // MARK: - High Scores
     var highScore = HighScores()
@@ -29,6 +30,7 @@ class Player {
         streak = 0
         correctCount = 0
         wrongCount = 0
+        coins = 0
     }
 
     // MARK: - High Score Updates
@@ -51,6 +53,14 @@ class Player {
         }
 
         return newRecord
+    }
+
+    func updateTopScores(_ sessionTotal: Int) {
+        highScore.topScores.append(sessionTotal)
+        highScore.topScores.sort(by: >)
+        if highScore.topScores.count > 3 {
+            highScore.topScores = Array(highScore.topScores.prefix(3))
+        }
     }
 
     // MARK: - Wrong Answer Handling
@@ -98,6 +108,7 @@ struct HighScores {
     var bestStreak: Int = 0
     var mostCoinsInRun: Int = 0
     var highestCorrectCount: Int = 0
+    var topScores: [Int] = []  // Top 3 scores, sorted descending
 }
 
 struct LifetimeStats {

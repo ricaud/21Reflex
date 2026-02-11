@@ -24,6 +24,9 @@ struct HelpView: View {
                     // How to play
                     howToPlaySection
 
+                    // Scoring
+                    scoringSection
+
                     // Card values
                     cardValuesSection
 
@@ -65,6 +68,32 @@ struct HelpView: View {
                 helpRow(icon: "checkmark.circle", text: "Tap the correct hand value before time runs out")
                 helpRow(icon: "flame", text: "Build streaks by answering correctly in a row")
                 helpRow(icon: "heart", text: "Wrong answers cost health - 3 strikes and you're out!")
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(gameState.currentTheme.buttonColor)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(gameState.currentTheme.borderColor, lineWidth: 4)
+        )
+    }
+
+    private var scoringSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("SCORING")
+                .font(.headline.bold())
+                .foregroundStyle(gameState.currentTheme.textColor)
+
+            VStack(alignment: .leading, spacing: 8) {
+                helpRow(icon: "10.circle.fill",
+                        text: "Base: 10 points for each correct answer")
+                helpRow(icon: "clock.arrow.circlepath",
+                        text: "Speed: -1 point per second (minimum 1)")
+                helpRow(icon: "star.fill",
+                        text: "Bonus: +2 points for numeric answer on Blackjack or Bust")
             }
         }
         .padding()

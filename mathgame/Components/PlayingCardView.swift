@@ -10,6 +10,7 @@ import SwiftUI
 struct PlayingCardView: View {
     let card: Card
     var isFaceDown: Bool = false
+    var animateOnAppear: Bool = false
 
     @State private var slideOffset: CGFloat = 100
     @State private var opacity: Double = 0
@@ -74,16 +75,16 @@ struct PlayingCardView: View {
                 }
             }
         }
-        .frame(width: 70, height: 100)
-        .offset(x: slideOffset)
-        .scaleEffect(scale)
-        .opacity(opacity)
+        .offset(x: animateOnAppear ? slideOffset : 0)
+        .scaleEffect(animateOnAppear ? scale : 1.0)
+        .opacity(animateOnAppear ? opacity : 1.0)
         .onAppear {
-            // Slide-in animation
-            withAnimation(.easeOut(duration: 0.35)) {
-                slideOffset = 0
-                scale = 1.0
-                opacity = 1
+            if animateOnAppear {
+                withAnimation(.easeOut(duration: 0.35)) {
+                    slideOffset = 0
+                    scale = 1.0
+                    opacity = 1
+                }
             }
         }
     }
