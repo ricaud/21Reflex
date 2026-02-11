@@ -155,51 +155,58 @@ struct GameView: View {
     }
 
     private var headerSection: some View {
-        HStack(spacing: 12) {
-            // Mode indicator
-            Text("Blackjack")
-                .font(.caption.bold())
-                .foregroundStyle(Color(red: 0.2, green: 0.6, blue: 0.3))
+        VStack(spacing: 12) {
 
-            Spacer()
+            HStack(spacing: 12) {
+                // Mode indicator
+                Text("Blackjack")
+                    .font(.caption.bold())
+                    .foregroundStyle(Color(red: 0.2, green: 0.6, blue: 0.3))
 
-            // Health with LIVES: label
-            if gameState.player.health > 0 {
-                HStack(spacing: 4) {
-                    Text("LIVES:")
-                        .font(.caption.bold())
-                        .foregroundStyle(.red)
-                    HealthIndicator(
-                        current: gameState.player.health,
-                        max: 3
+                Spacer()
+
+                // Points (hidden in practice mode)
+                if !gameState.isPracticeMode, let session = gameState.session {
+                    HStack(spacing: 4) {
+                        Text("\(session.currentRoundPoints)")
+                            .font(.headline.bold())
+                            .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
+                        Text("pts")
+                            .font(.caption)
+                            .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme).opacity(0.7))
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
                     )
                 }
             }
+            .padding(.horizontal)
 
-            // Streak
-            StreakBadge(streak: gameState.player.streak)
-
-            Spacer()
-
-            // Points (hidden in practice mode)
-            if !gameState.isPracticeMode, let session = gameState.session {
-                HStack(spacing: 4) {
-                    Text("\(session.currentRoundPoints)")
-                        .font(.headline.bold())
-                        .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
-                    Text("pts")
-                        .font(.caption)
-                        .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme).opacity(0.7))
+            // Second row: Lives (left) and Streak (right) - both away from Dynamic Island
+            HStack {
+                // Health with LIVES: label
+                if gameState.player.health > 0 {
+                    HStack(spacing: 4) {
+                        Text("LIVES:")
+                            .font(.caption.bold())
+                            .foregroundStyle(.red)
+                        HealthIndicator(
+                            current: gameState.player.health,
+                            max: 3
+                        )
+                    }
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
-                )
+
+                Spacer()
+
+                // Streak - moved to right side away from Dynamic Island
+                StreakBadge(streak: gameState.player.streak)
             }
+            .padding(.horizontal)
         }
-        .padding(.horizontal)
     }
 
     private var timerProgress: Double {
