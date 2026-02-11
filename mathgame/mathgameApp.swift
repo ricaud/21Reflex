@@ -16,7 +16,7 @@ struct mathgameApp: App {
         let schema = Schema([
             PersistentPlayer.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .private("iCloud.com.ricaud.mathgame"))
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -42,6 +42,13 @@ struct mathgameApp: App {
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) { oldPhase, newPhase in
             GameState.shared.handleScenePhaseChange(newPhase)
+
+            // Trigger iCloud sync on background
+            if newPhase == .background {
+                Task {
+                    await CloudSyncManager.shared.sync()
+                }
+            }
         }
     }
 }
