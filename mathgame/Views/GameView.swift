@@ -155,7 +155,7 @@ struct GameView: View {
     }
 
     private var headerSection: some View {
-        HStack {
+        HStack(spacing: 12) {
             // Mode indicator
             Text("Blackjack")
                 .font(.caption.bold())
@@ -163,18 +163,23 @@ struct GameView: View {
 
             Spacer()
 
-            // Health
+            // Health with LIVES: label
             if gameState.player.health > 0 {
-                HealthIndicator(
-                    current: gameState.player.health,
-                    max: 3
-                )
+                HStack(spacing: 4) {
+                    Text("LIVES:")
+                        .font(.caption.bold())
+                        .foregroundStyle(.red)
+                    HealthIndicator(
+                        current: gameState.player.health,
+                        max: 3
+                    )
+                }
             }
-
-            Spacer()
 
             // Streak
             StreakBadge(streak: gameState.player.streak)
+
+            Spacer()
 
             // Points (hidden in practice mode)
             if !gameState.isPracticeMode, let session = gameState.session {
