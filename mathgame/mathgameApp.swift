@@ -38,9 +38,9 @@ struct mathgameApp: App {
     var body: some Scene {
         WindowGroup {
             MenuView()
-                .task {
+                .onAppear {
                     // Authenticate with Game Center on launch
-                    await GameCenterManager.shared.authenticate()
+                    GameCenterManager.shared.authenticate()
                 }
         }
         .modelContainer(sharedModelContainer)

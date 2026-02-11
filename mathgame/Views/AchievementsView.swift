@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import GameKit
 
 struct AchievementsView: View {
     @State private var gameState = GameState.shared
