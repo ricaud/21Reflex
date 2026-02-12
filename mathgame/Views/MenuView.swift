@@ -128,7 +128,10 @@ struct MenuView: View {
         // This ensures we're using the same instance as the UI
         if let player = persistentPlayers.first {
             gameState.persistentPlayer = player
-            gameState.loadThemeFromPersistentStorage()
+
+            // Load complete state including top scores and theme states
+            gameState.loadCompleteState(context: modelContext)
+
             print("[MenuView] Using existing persistent player. Coins: \(player.availableCoins)")
         } else {
             // Create new persistent player

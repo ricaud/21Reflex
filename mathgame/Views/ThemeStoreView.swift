@@ -151,6 +151,9 @@ struct ThemeStoreView: View {
         theme.isEquipped = true
         gameState.currentTheme = theme
 
+        // Save theme states for CloudKit sync
+        gameState.saveThemeStates(context: modelContext)
+
         // Play sound
         gameState.audioManager.playSound(.correct)
     }
@@ -183,6 +186,9 @@ struct ThemeStoreView: View {
         do {
             try modelContext.save()
             print("[ThemeStoreView] Purchase saved successfully")
+
+            // Save theme states for CloudKit sync
+            gameState.saveThemeStates(context: modelContext)
         } catch {
             print("[ThemeStoreView] Failed to save purchase: \(error)")
         }
