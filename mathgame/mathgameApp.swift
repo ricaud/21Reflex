@@ -16,18 +16,25 @@ struct mathgameApp: App {
         let schema = Schema([
             PersistentPlayer.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .private("iCloud.com.ricaud.21reflex"))
+
+        // Try local storage first (works in simulator and on device)
+        let localConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            // First try local persistent storage (no CloudKit)
+            let container = try ModelContainer(for: schema, configurations: [localConfig])
+            print("[mathgameApp] Successfully created local ModelContainer")
+            return container
         } catch {
-            // Log error and fallback to in-memory storage rather than crashing
-            print("Failed to create persistent ModelContainer: \(error)")
-            print("Falling back to in-memory storage")
+            print("[mathgameApp] Failed to create local ModelContainer: \(error)")
+            print("[mathgameApp] Falling back to in-memory storage")
 
+            // Fallback to in-memory for preview/simulator issues
             let fallbackConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
             do {
-                return try ModelContainer(for: schema, configurations: [fallbackConfig])
+                let container = try ModelContainer(for: schema, configurations: [fallbackConfig])
+                print("[mathgameApp] Successfully created in-memory ModelContainer")
+                return container
             } catch {
                 // Only crash if even in-memory fails (critical system issue)
                 fatalError("Critical: Cannot create any ModelContainer: \(error)")
