@@ -196,6 +196,7 @@ class BlackjackSession {
                 await MainActor.run {
                     self.currentCards.removeAll()
                     self.dealInitialCards()
+                    self.resetTimer()  // Reset timer for new hand
                 }
             }
         } else {
