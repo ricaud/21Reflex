@@ -10,26 +10,26 @@ import SwiftData
 @Model
 class PersistentPlayer {
     // High scores
-    var bestStreak: Int
-    var highestCorrectCount: Int
+    var bestStreak: Int = 0
+    var highestCorrectCount: Int = 0
 
     // Lifetime stats
-    var totalQuestionsAnswered: Int
-    var totalCorrect: Int
-    var totalWrong: Int
-    var runsCompleted: Int
+    var totalQuestionsAnswered: Int = 0
+    var totalCorrect: Int = 0
+    var totalWrong: Int = 0
+    var runsCompleted: Int = 0
 
     // Coin tracking
-    var totalCoinsEarned: Int
-    var totalCoinsSpent: Int
+    var totalCoinsEarned: Int = 0
+    var totalCoinsSpent: Int = 0
 
     // Audio settings
-    var musicVolume: Float
-    var sfxVolume: Float
-    var hapticsEnabled: Bool
+    var musicVolume: Float = 0.7
+    var sfxVolume: Float = 0.8
+    var hapticsEnabled: Bool = true
 
     // Theme settings
-    var equippedThemeID: String
+    var equippedThemeID: String = "classic"
 
     /// Available coins for spending
     var availableCoins: Int {

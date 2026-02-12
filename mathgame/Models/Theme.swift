@@ -12,22 +12,22 @@ import UIKit
 
 @Model
 class Theme {
-    var id: String
-    var name: String
-    var cost: Int
-    var isUnlocked: Bool
-    var isEquipped: Bool
-    var supportsDarkMode: Bool
+    var id: String = ""
+    var name: String = ""
+    var cost: Int = 0
+    var isUnlocked: Bool = false
+    var isEquipped: Bool = false
+    var supportsDarkMode: Bool = false
 
     // Light mode colors stored as hex strings
-    var bgColorHex: String
-    var textColorHex: String
-    var accentColorHex: String
-    var buttonColorHex: String
-    var buttonTextColorHex: String
-    var correctColorHex: String
-    var wrongColorHex: String
-    var borderColorHex: String
+    var bgColorHex: String = "FFFFFF"
+    var textColorHex: String = "000000"
+    var accentColorHex: String = "007AFF"
+    var buttonColorHex: String = "E5E5EA"
+    var buttonTextColorHex: String = "000000"
+    var correctColorHex: String = "34C759"
+    var wrongColorHex: String = "FF3B30"
+    var borderColorHex: String = "000000"
 
     // Dark mode colors stored as hex strings (optional)
     var bgColorDarkHex: String?
