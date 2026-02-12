@@ -257,6 +257,9 @@ class GameState {
     }
 
     func returnToMenu() {
+        print("[GameState] returnToMenu() called")
+        print("[GameState] Current navigation path count: \(navigationPath.count)")
+
         // First dismiss pause overlay and reset pause state
         setPauseState(false)
 
@@ -266,6 +269,8 @@ class GameState {
 
         // Finally reset navigation
         resetNavigation()
+        print("[GameState] Navigation reset complete, path count: \(navigationPath.count)")
+
         audioManager.playMusic(.menu)
     }
 

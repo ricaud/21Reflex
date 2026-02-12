@@ -149,7 +149,10 @@ struct GameOverView: View {
             // Return to menu button
             ThickBorderButton(
                 title: "RETURN TO MENU",
-                action: { gameState.returnToMenu() },
+                action: {
+                    // Use the singleton directly to ensure we're modifying the shared instance
+                    GameState.shared.returnToMenu()
+                },
                 bgColor: gameState.currentTheme.effectiveButtonColor(colorScheme),
                 textColor: gameState.currentTheme.effectiveTextColor(colorScheme),
                 borderColor: gameState.currentTheme.effectiveBorderColor(colorScheme),
