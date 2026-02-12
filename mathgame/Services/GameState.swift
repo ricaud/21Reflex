@@ -52,6 +52,9 @@ class GameState {
     // MARK: - Persistent Player (set from outside)
     weak var persistentPlayer: PersistentPlayer?
 
+    // MARK: - Model Context for SwiftData saves
+    weak var modelContext: ModelContext?
+
     private init() {}
 
     // MARK: - Theme Management
@@ -157,12 +160,19 @@ class GameState {
             player.updateTopScores(sessionPoints)
 
             // Sync coins to persistent storage
-            persistentPlayer?.totalCoinsEarned += player.coins
-
-            // Save changes to persistent storage
-            // SwiftData auto-saves, but we ensure the persistentPlayer reference is valid
             if let pp = persistentPlayer {
+                pp.totalCoinsEarned += player.coins
                 print("[GameState] Earned \(player.coins) coins. Total earned: \(pp.totalCoinsEarned), Available: \(pp.availableCoins)")
+
+                // Explicitly save to SwiftData
+                if let context = modelContext {
+                    do {
+                        try context.save()
+                        print("[GameState] SwiftData context saved successfully")
+                    } catch {
+                        print("[GameState] Failed to save context: \(error)")
+                    }
+                }
             }
 
             // Submit scores to Game Center

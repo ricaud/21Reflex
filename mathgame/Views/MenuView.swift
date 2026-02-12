@@ -121,6 +121,9 @@ struct MenuView: View {
     }
 
     private func setupPersistentPlayer() {
+        // Set the model context for GameState to use for saves
+        gameState.modelContext = modelContext
+
         let descriptor = FetchDescriptor<PersistentPlayer>()
         if let player = try? modelContext.fetch(descriptor).first {
             gameState.persistentPlayer = player
@@ -130,6 +133,9 @@ struct MenuView: View {
             let newPlayer = PersistentPlayer()
             modelContext.insert(newPlayer)
             gameState.persistentPlayer = newPlayer
+
+            // Save the new player immediately
+            try? modelContext.save()
         }
     }
 
