@@ -15,6 +15,7 @@ struct mathgameApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             PersistentPlayer.self,
+            Theme.self,
         ])
 
         // Try local storage first (works in simulator and on device)
