@@ -78,6 +78,102 @@ class GameState {
         persistentPlayer?.equippedThemeID = currentTheme.id
     }
 
+    // MARK: - Complete State Loading
+
+    /// Load all persisted state from SwiftData
+    func loadCompleteState(context: ModelContext) {
+        // Load PersistentPlayer
+        let playerDescriptor = FetchDescriptor<PersistentPlayer>()
+        if let pp = try? context.fetch(playerDescriptor).first {
+            persistentPlayer = pp
+
+            // Sync to in-memory Player
+            syncPersistentPlayerToPlayer(pp)
+
+            print("[GameState] Loaded complete state from PersistentPlayer")
+        }
+
+        // Load ThemeState and sync to availableThemes
+        loadThemeStates(context: context)
+    }
+
+    /// Sync PersistentPlayer data to in-memory Player
+    private func syncPersistentPlayerToPlayer(_ pp: PersistentPlayer) {
+        // Sync high scores
+        player.highScore.topScores = pp.topScores
+        player.highScore.bestStreak = pp.bestStreak
+        player.highScore.mostCoinsInRun = pp.mostCoinsInRun
+        player.highScore.highestCorrectCount = pp.highestCorrectCount
+
+        // Sync lifetime stats
+        player.lifetimeStats.totalQuestionsAnswered = pp.totalQuestionsAnswered
+        player.lifetimeStats.totalCorrect = pp.totalCorrect
+        player.lifetimeStats.totalWrong = pp.totalWrong
+        player.lifetimeStats.runsCompleted = pp.runsCompleted
+
+        // Sync audio settings
+        audioManager.isMuted = pp.isMuted
+    }
+
+    /// Load ThemeState and apply to availableThemes
+    func loadThemeStates(context: ModelContext) {
+        let themeStateDescriptor = FetchDescriptor<ThemeState>()
+        guard let themeStates = try? context.fetch(themeStateDescriptor) else { return }
+
+        for themeState in themeStates {
+            if let theme = availableThemes.first(where: { $0.id == themeState.themeID }) {
+                theme.isUnlocked = themeState.isUnlocked
+                theme.isEquipped = themeState.isEquipped
+            }
+        }
+
+        // Ensure current equipped theme is set
+        if let equippedTheme = availableThemes.first(where: { $0.isEquipped }) {
+            currentTheme = equippedTheme
+        }
+    }
+
+    /// Save current theme states to ThemeState model
+    func saveThemeStates(context: ModelContext) {
+        for theme in availableThemes {
+            // Use a simple fetch and filter instead of predicate to avoid capture issues
+            let descriptor = FetchDescriptor<ThemeState>()
+            let allStates = (try? context.fetch(descriptor)) ?? []
+            let existing = allStates.first { $0.themeID == theme.id }
+
+            let themeState: ThemeState
+            if let existing = existing {
+                themeState = existing
+            } else {
+                themeState = ThemeState(themeID: theme.id)
+                context.insert(themeState)
+            }
+
+            themeState.isUnlocked = theme.isUnlocked
+            themeState.isEquipped = theme.isEquipped
+            themeState.lastModified = Date()
+
+            if theme.isUnlocked && themeState.unlockDate == nil {
+                themeState.unlockDate = Date()
+            }
+        }
+
+        do {
+            try context.save()
+            print("[GameState] Saved theme states")
+
+            // Trigger CloudKit sync
+            Task {
+                let descriptor = FetchDescriptor<ThemeState>()
+                if let allStates = try? context.fetch(descriptor) {
+                    await CloudSyncManager.shared.syncAllThemeStatesToCloud(allStates)
+                }
+            }
+        } catch {
+            print("[GameState] Failed to save theme states: \(error)")
+        }
+    }
+
     // MARK: - Navigation
     func navigate(to screen: Screen) {
         currentScreen = screen
@@ -170,11 +266,27 @@ class GameState {
                     pp.totalQuestionsAnswered += player.correctCount + player.wrongCount
                     pp.runsCompleted += 1
 
+                    // Save top scores
+                    pp.topScores = player.highScore.topScores
+                    pp.mostCoinsInRun = max(pp.mostCoinsInRun, player.coins)
+
+                    // Update achievement progress
+                    pp.firstStepsCompleted = pp.firstStepsCompleted || (player.correctCount >= 1)
+                    pp.streakMasterProgress = max(pp.streakMasterProgress, player.streak)
+                    pp.millionaireProgress = pp.totalCoinsEarned
+                    pp.blackjackProProgress = pp.totalCorrect
+                    pp.themeCollectorProgress = availableThemes.filter { $0.isUnlocked }.count
+
                     print("[GameState] Earned \(player.coins) coins. Total earned: \(pp.totalCoinsEarned), Available: \(pp.availableCoins)")
 
                     do {
                         try context.save()
                         print("[GameState] SwiftData context saved successfully")
+
+                        // Trigger CloudKit sync
+                        Task {
+                            await CloudSyncManager.shared.syncPersistentPlayerToCloud(pp)
+                        }
                     } catch {
                         print("[GameState] Failed to save context: \(error)")
                     }
