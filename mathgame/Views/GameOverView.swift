@@ -147,20 +147,24 @@ struct GameOverView: View {
     private var buttonsSection: some View {
         VStack(spacing: 16) {
             // Return to menu button
-            ThickBorderButton(
-                title: "RETURN TO MENU",
-                action: {
-                    // Use the singleton directly to ensure we're modifying the shared instance
-                    GameState.shared.returnToMenu()
-                },
-                bgColor: gameState.currentTheme.effectiveButtonColor(colorScheme),
-                textColor: gameState.currentTheme.effectiveTextColor(colorScheme),
-                borderColor: gameState.currentTheme.effectiveBorderColor(colorScheme),
-                borderWidth: 3,
-                shadowOffset: 3,
-                cornerRadius: 12
-            )
-            .frame(height: 50)
+            Button(action: {
+                print("[GameOverView] Return to Menu button tapped")
+                GameState.shared.returnToMenu()
+            }) {
+                Text("RETURN TO MENU")
+                    .font(.headline.bold())
+                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 3)
+                    )
+            }
         }
         .padding(.horizontal, 20)
         .padding(.top, 8)
