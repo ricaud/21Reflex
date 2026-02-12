@@ -156,22 +156,36 @@ struct ThemeStoreView: View {
     }
 
     private func purchaseTheme() {
-        guard let theme = selectedTheme else { return }
+        guard let theme = selectedTheme else {
+            print("[ThemeStoreView] No theme selected for purchase")
+            return
+        }
 
         // Check if user has enough coins
         guard availableCoins >= theme.cost else {
-            // Not enough coins - could show an alert here
+            print("[ThemeStoreView] Not enough coins. Have: \(availableCoins), Need: \(theme.cost)")
+            return
+        }
+
+        guard let player = persistentPlayers.first else {
+            print("[ThemeStoreView] No persistent player found")
             return
         }
 
         // Deduct coins from persistent player
-        persistentPlayer?.totalCoinsSpent += theme.cost
+        player.totalCoinsSpent += theme.cost
+        print("[ThemeStoreView] Deducted \(theme.cost) coins. Remaining: \(player.availableCoins)")
 
         // Unlock theme
         theme.isUnlocked = true
 
         // Save changes to SwiftData
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+            print("[ThemeStoreView] Purchase saved successfully")
+        } catch {
+            print("[ThemeStoreView] Failed to save purchase: \(error)")
+        }
 
         // Show success animation
         purchasedTheme = theme

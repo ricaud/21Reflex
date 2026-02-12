@@ -159,20 +159,30 @@ class GameState {
             let sessionPoints = session?.totalSessionPoints ?? 0
             player.updateTopScores(sessionPoints)
 
-            // Sync coins to persistent storage
-            if let pp = persistentPlayer {
-                pp.totalCoinsEarned += player.coins
-                print("[GameState] Earned \(player.coins) coins. Total earned: \(pp.totalCoinsEarned), Available: \(pp.availableCoins)")
+            // Sync coins and stats to persistent storage
+            // Fetch fresh reference to ensure we're updating the right object
+            if let context = modelContext {
+                let descriptor = FetchDescriptor<PersistentPlayer>()
+                if let pp = try? context.fetch(descriptor).first {
+                    pp.totalCoinsEarned += player.coins
+                    pp.totalCorrect += player.correctCount
+                    pp.totalWrong += player.wrongCount
+                    pp.totalQuestionsAnswered += player.correctCount + player.wrongCount
+                    pp.runsCompleted += 1
 
-                // Explicitly save to SwiftData
-                if let context = modelContext {
+                    print("[GameState] Earned \(player.coins) coins. Total earned: \(pp.totalCoinsEarned), Available: \(pp.availableCoins)")
+
                     do {
                         try context.save()
                         print("[GameState] SwiftData context saved successfully")
                     } catch {
                         print("[GameState] Failed to save context: \(error)")
                     }
+                } else {
+                    print("[GameState] Warning: Could not fetch PersistentPlayer to save coins")
                 }
+            } else {
+                print("[GameState] Warning: modelContext is nil, cannot save coins")
             }
 
             // Submit scores to Game Center
@@ -193,6 +203,17 @@ class GameState {
     }
 
     private func checkAchievements() async {
+        // Fetch fresh persistent player data for achievements
+        var totalCoins = 0
+        var totalCorrect = 0
+        if let context = modelContext {
+            let descriptor = FetchDescriptor<PersistentPlayer>()
+            if let pp = try? context.fetch(descriptor).first {
+                totalCoins = pp.totalCoinsEarned
+                totalCorrect = pp.totalCorrect
+            }
+        }
+
         // First Steps - Answer first question (submit 100% on first correct)
         if player.correctCount >= 1 {
             await GameCenterManager.shared.submitAchievement(.firstSteps, percentComplete: 100)
@@ -204,7 +225,6 @@ class GameState {
         }
 
         // Millionaire - Earn 1,000,000 coins total
-        let totalCoins = persistentPlayer?.totalCoinsEarned ?? 0
         if totalCoins >= 1_000_000 {
             await GameCenterManager.shared.submitAchievement(.millionaire, percentComplete: 100)
         } else {
@@ -213,7 +233,6 @@ class GameState {
         }
 
         // Blackjack Pro - Answer 100 blackjack hands correctly
-        let totalCorrect = persistentPlayer?.totalCorrect ?? 0
         if totalCorrect >= 100 {
             await GameCenterManager.shared.submitAchievement(.blackjackPro, percentComplete: 100)
         } else {

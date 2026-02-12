@@ -124,10 +124,12 @@ struct MenuView: View {
         // Set the model context for GameState to use for saves
         gameState.modelContext = modelContext
 
-        let descriptor = FetchDescriptor<PersistentPlayer>()
-        if let player = try? modelContext.fetch(descriptor).first {
+        // Always refresh the persistent player reference from the query results
+        // This ensures we're using the same instance as the UI
+        if let player = persistentPlayers.first {
             gameState.persistentPlayer = player
             gameState.loadThemeFromPersistentStorage()
+            print("[MenuView] Using existing persistent player. Coins: \(player.availableCoins)")
         } else {
             // Create new persistent player
             let newPlayer = PersistentPlayer()
@@ -135,7 +137,12 @@ struct MenuView: View {
             gameState.persistentPlayer = newPlayer
 
             // Save the new player immediately
-            try? modelContext.save()
+            do {
+                try modelContext.save()
+                print("[MenuView] Created new persistent player")
+            } catch {
+                print("[MenuView] Failed to save new player: \(error)")
+            }
         }
     }
 
