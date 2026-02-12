@@ -1,6 +1,6 @@
-# Math Rush
+# 21 Reflex
 
-A fast-paced math game for iOS that tests your multiplication skills and card counting abilities. Built with SwiftUI and SwiftData.
+A fast-paced blackjack card counting trainer for iOS. Practice your card counting skills with realistic 6-deck shoe simulation. Built with SwiftUI and SwiftData.
 
 ## Features
 

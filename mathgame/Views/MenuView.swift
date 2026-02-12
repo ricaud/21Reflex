@@ -178,13 +178,13 @@ struct MenuView: View {
                 )
 
             // Title
-            Text("CARD COUNT")
+            Text("21 REFLEX")
                 .font(.system(size: 44, weight: .black, design: .rounded))
                 .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
                 .shadow(color: gameState.currentTheme.effectiveBorderColor(colorScheme), radius: 0, x: 3, y: 3)
 
             // Subtitle
-            Text("PRACTICE BLACKJACK CARD COUNTING")
+            Text("MASTER BLACKJACK CARD COUNTING")
                 .font(.caption.bold())
                 .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
                 .padding(.horizontal, 16)

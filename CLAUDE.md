@@ -14,7 +14,7 @@ open mathgame.xcodeproj
 
 ## Project Overview
 
-**Math Rush** is an iOS blackjack card counting game built with SwiftUI and SwiftData, targeting iOS 17+. The app is on the `blackjack-only` branch - it only includes the blackjack card counting mode (no math quiz modes).
+**21 Reflex** is an iOS blackjack card counting trainer built with SwiftUI and SwiftData, targeting iOS 17+. The app is on the `blackjack-only` branch - it only includes the blackjack card counting mode (no math quiz modes).
 
 ## Architecture
 

@@ -16,7 +16,7 @@ struct mathgameApp: App {
         let schema = Schema([
             PersistentPlayer.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .private("iCloud.com.ricaud.mathgame"))
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .private("iCloud.com.ricaud.21reflex"))
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
