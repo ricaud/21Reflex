@@ -36,46 +36,35 @@ struct ThickBorderButton: View {
                 )
                 .offset(y: isPressed ? shadowOffset : 0)
         }
-        .buttonStyle(PlainButtonStyle())
-        .background(
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(borderColor)
-                .offset(y: shadowOffset)
-        )
-        .pressEvents {
-            withAnimation(.easeInOut(duration: 0.1)) {
-                isPressed = true
-            }
-        } onRelease: {
-            withAnimation(.easeInOut(duration: 0.1)) {
-                isPressed = false
-            }
-        }
+        .buttonStyle(PressableButtonStyle(
+            isPressed: $isPressed,
+            shadowOffset: shadowOffset,
+            cornerRadius: cornerRadius,
+            borderColor: borderColor
+        ))
     }
 }
 
-// Helper for press detection
-struct PressEventsModifier: ViewModifier {
-    var onPress: () -> Void
-    var onRelease: () -> Void
+// Custom button style that handles press animation without interfering with tap
+struct PressableButtonStyle: ButtonStyle {
+    @Binding var isPressed: Bool
+    var shadowOffset: CGFloat
+    var cornerRadius: CGFloat
+    var borderColor: Color
 
-    func body(content: Content) -> some View {
-        content
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        onPress()
-                    }
-                    .onEnded { _ in
-                        onRelease()
-                    }
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .offset(y: isPressed ? shadowOffset : 0)
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(borderColor)
+                    .offset(y: shadowOffset)
             )
-    }
-}
-
-extension View {
-    func pressEvents(onPress: @escaping () -> Void, onRelease: @escaping () -> Void) -> some View {
-        modifier(PressEventsModifier(onPress: onPress, onRelease: onRelease))
+            .onChange(of: configuration.isPressed) { _, newValue in
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    isPressed = newValue
+                }
+            }
     }
 }
 
