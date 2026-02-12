@@ -16,29 +16,45 @@ struct mathgameApp: App {
         let schema = Schema([
             PersistentPlayer.self,
             Theme.self,
+            ThemeState.self,
         ])
 
-        // Try local storage first (works in simulator and on device)
-        let localConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        // Configure for CloudKit sync (private database)
+        let cloudKitConfig = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: .private("iCloud.com.ricaud.21reflex")
+        )
 
         do {
-            // First try local persistent storage (no CloudKit)
-            let container = try ModelContainer(for: schema, configurations: [localConfig])
-            print("[mathgameApp] Successfully created local ModelContainer")
+            // Try CloudKit-enabled storage first
+            let container = try ModelContainer(for: schema, configurations: [cloudKitConfig])
+            print("[mathgameApp] Successfully created CloudKit ModelContainer")
             return container
         } catch {
-            print("[mathgameApp] Failed to create local ModelContainer: \(error)")
-            print("[mathgameApp] Falling back to in-memory storage")
+            print("[mathgameApp] Failed to create CloudKit ModelContainer: \(error)")
+            print("[mathgameApp] Falling back to local storage (no sync)")
 
-            // Fallback to in-memory for preview/simulator issues
-            let fallbackConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            // Fallback to local storage (works in simulator without iCloud)
+            let localConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
             do {
-                let container = try ModelContainer(for: schema, configurations: [fallbackConfig])
-                print("[mathgameApp] Successfully created in-memory ModelContainer")
+                let container = try ModelContainer(for: schema, configurations: [localConfig])
+                print("[mathgameApp] Successfully created local ModelContainer")
                 return container
             } catch {
-                // Only crash if even in-memory fails (critical system issue)
-                fatalError("Critical: Cannot create any ModelContainer: \(error)")
+                print("[mathgameApp] Failed to create local ModelContainer: \(error)")
+                print("[mathgameApp] Falling back to in-memory storage")
+
+                // Final fallback to in-memory
+                let fallbackConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+                do {
+                    let container = try ModelContainer(for: schema, configurations: [fallbackConfig])
+                    print("[mathgameApp] Successfully created in-memory ModelContainer")
+                    return container
+                } catch {
+                    // Only crash if even in-memory fails (critical system issue)
+                    fatalError("Critical: Cannot create any ModelContainer: \(error)")
+                }
             }
         }
     }()
