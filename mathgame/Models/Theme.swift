@@ -154,7 +154,7 @@ class Theme {
     static let candy = Theme(
         id: "candy",
         name: "Candy",
-        cost: 100,
+        cost: 15,
         supportsDarkMode: true,
         bgColor: Color(red: 1.00, green: 0.90, blue: 0.95),
         textColor: Color(red: 0.30, green: 0.20, blue: 0.30),
