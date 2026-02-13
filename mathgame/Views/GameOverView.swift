@@ -17,24 +17,24 @@ struct GameOverView: View {
             gameState.currentTheme.effectiveBgColor(colorScheme)
                 .ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Header
-                    headerSection
+            VStack(spacing: 24) {
+                // Header
+                headerSection
 
-                    // Stats panel
-                    statsPanel
+                // Stats panel
+                statsPanel
 
-                    // Buttons
-                    buttonsSection
-                }
-                .padding()
-                .padding(.top, 40)
+                // Buttons
+                buttonsSection
             }
+            .padding()
+            
         }
         .onAppear {
             gameState.audioManager.playMusic(.gameOver)
         }
+        .navigationBarBackButtonHidden(true)
+        .ignoresSafeArea(.container, edges: .top)
     }
 
     private var headerSection: some View {
@@ -111,7 +111,6 @@ struct GameOverView: View {
                         .font(.system(size: 42, weight: .black, design: .rounded))
                         .foregroundStyle(gameState.currentTheme.effectiveAccentColor(colorScheme))
                 }
-                .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
@@ -130,7 +129,7 @@ struct GameOverView: View {
                         .font(.title.bold())
                         .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
                 }
-                .padding(.vertical, 8)
+                .padding(.vertical, 0)
             }
         }
         .padding()
@@ -145,7 +144,7 @@ struct GameOverView: View {
     }
 
     private var buttonsSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 8) {
             // Return to menu button
             Button(action: {
                 print("[GameOverView] Return to Menu button tapped")
@@ -167,7 +166,7 @@ struct GameOverView: View {
             }
         }
         .padding(.horizontal, 20)
-        .padding(.top, 8)
+        .padding(.top, 4)
     }
 
     private func statBox(value: String, label: String, color: Color) -> some View {

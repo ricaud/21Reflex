@@ -68,14 +68,22 @@ class AudioManager {
     // MARK: - Volume Setters
     func setMusicVolume(_ volume: Float) {
         musicVolume = volume
+        GameState.shared.saveAudioSettings()
     }
 
     func setSFXVolume(_ volume: Float) {
         sfxVolume = volume
+        GameState.shared.saveAudioSettings()
     }
 
     func setHapticsEnabled(_ enabled: Bool) {
         hapticsEnabled = enabled
+        GameState.shared.saveAudioSettings()
+    }
+
+    func setMuted(_ muted: Bool) {
+        isMuted = muted
+        GameState.shared.saveAudioSettings()
     }
 
     // MARK: - Sound Effects

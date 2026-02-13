@@ -71,12 +71,8 @@ struct mathgameApp: App {
         .onChange(of: scenePhase) { oldPhase, newPhase in
             GameState.shared.handleScenePhaseChange(newPhase)
 
-            // Trigger iCloud sync on background
-            if newPhase == .background {
-                Task {
-                    await CloudSyncManager.shared.sync()
-                }
-            }
+            // SwiftData auto-saves on background; no manual sync needed
+            // CloudKit sync is handled automatically by SwiftData
         }
     }
 }

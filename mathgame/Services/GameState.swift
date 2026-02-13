@@ -112,7 +112,12 @@ class GameState {
         player.lifetimeStats.runsCompleted = pp.runsCompleted
 
         // Sync audio settings
+        audioManager.musicVolume = pp.musicVolume
+        audioManager.sfxVolume = pp.sfxVolume
+        audioManager.hapticsEnabled = pp.hapticsEnabled
         audioManager.isMuted = pp.isMuted
+
+        print("[GameState] Loaded audio settings - Music: \(pp.musicVolume), SFX: \(pp.sfxVolume), Haptics: \(pp.hapticsEnabled), Muted: \(pp.isMuted)")
     }
 
     /// Load ThemeState and apply to availableThemes
@@ -156,19 +161,14 @@ class GameState {
             if theme.isUnlocked && themeState.unlockDate == nil {
                 themeState.unlockDate = Date()
             }
+
+            // Update modification timestamp for sync tracking
+            themeState.lastModified = Date()
         }
 
         do {
             try context.save()
             print("[GameState] Saved theme states")
-
-            // Trigger CloudKit sync
-            Task {
-                let descriptor = FetchDescriptor<ThemeState>()
-                if let allStates = try? context.fetch(descriptor) {
-                    await CloudSyncManager.shared.syncAllThemeStatesToCloud(allStates)
-                }
-            }
         } catch {
             print("[GameState] Failed to save theme states: \(error)")
         }
@@ -277,16 +277,14 @@ class GameState {
                     pp.blackjackProProgress = pp.totalCorrect
                     pp.themeCollectorProgress = availableThemes.filter { $0.isUnlocked }.count
 
+                    // Update sync timestamp before saving
+                    pp.markModified()
+
                     print("[GameState] Earned \(player.coins) coins. Total earned: \(pp.totalCoinsEarned), Available: \(pp.availableCoins)")
 
                     do {
                         try context.save()
                         print("[GameState] SwiftData context saved successfully")
-
-                        // Trigger CloudKit sync
-                        Task {
-                            await CloudSyncManager.shared.syncPersistentPlayerToCloud(pp)
-                        }
                     } catch {
                         print("[GameState] Failed to save context: \(error)")
                     }
@@ -430,6 +428,28 @@ class GameState {
         // This is a hook for any additional save logic
     }
 
+    // MARK: - Audio Settings Persistence
+
+    /// Save current audio settings to PersistentPlayer
+    func saveAudioSettings() {
+        guard let pp = persistentPlayer, let context = modelContext else {
+            print("[GameState] Cannot save audio settings - missing persistentPlayer or context")
+            return
+        }
+
+        pp.musicVolume = audioManager.musicVolume
+        pp.sfxVolume = audioManager.sfxVolume
+        pp.hapticsEnabled = audioManager.hapticsEnabled
+        pp.isMuted = audioManager.isMuted
+        pp.markModified()
+
+        do {
+            try context.save()
+            print("[GameState] Saved audio settings - Music: \(pp.musicVolume), SFX: \(pp.sfxVolume), Haptics: \(pp.hapticsEnabled), Muted: \(pp.isMuted)")
+        } catch {
+            print("[GameState] Failed to save audio settings: \(error)")
+        }
+    }
 
     // MARK: - Settings from Pause
     func showSettingsFromPause() {

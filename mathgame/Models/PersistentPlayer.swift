@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import UIKit
 
 @Model
 class PersistentPlayer {
@@ -49,12 +50,38 @@ class PersistentPlayer {
     var blackjackProProgress: Int = 0  // Total correct answers toward 100
     var themeCollectorProgress: Int = 0 // Unlocked themes count toward 5
 
-    // CloudKit sync tracking
+    // CloudKit sync tracking (legacy - kept for migration)
     var lastCloudKitSync: Date? = nil
+
+    // SwiftData native sync tracking
+    var lastModified: Date = Date()
+    var lastModifiedByDevice: String = ""
 
     /// Available coins for spending
     var availableCoins: Int {
         totalCoinsEarned - totalCoinsSpent
+    }
+
+    /// Call before saving to update sync metadata
+    func markModified() {
+        lastModified = Date()
+        lastModifiedByDevice = Self.getDeviceIdentifier()
+    }
+
+    /// Returns a unique identifier for this device
+    private static func getDeviceIdentifier() -> String {
+        // Use identifierForVendor if available (requires UIKit import at call site)
+        // For the model itself, we'll set this via markModified from the UI layer
+        // or use a stored UUID as fallback
+        if let vendorID = UIDevice.current.identifierForVendor?.uuidString {
+            return vendorID
+        }
+        // Fallback to a stored UUID
+        return UserDefaults.standard.string(forKey: "deviceIdentifier") ?? {
+            let newID = UUID().uuidString
+            UserDefaults.standard.set(newID, forKey: "deviceIdentifier")
+            return newID
+        }()
     }
 
     init(
@@ -78,7 +105,9 @@ class PersistentPlayer {
         millionaireProgress: Int = 0,
         blackjackProProgress: Int = 0,
         themeCollectorProgress: Int = 0,
-        lastCloudKitSync: Date? = nil
+        lastCloudKitSync: Date? = nil,
+        lastModified: Date = Date(),
+        lastModifiedByDevice: String? = nil
     ) {
         self.bestStreak = bestStreak
         self.highestCorrectCount = highestCorrectCount
@@ -101,5 +130,7 @@ class PersistentPlayer {
         self.blackjackProProgress = blackjackProProgress
         self.themeCollectorProgress = themeCollectorProgress
         self.lastCloudKitSync = lastCloudKitSync
+        self.lastModified = lastModified
+        self.lastModifiedByDevice = lastModifiedByDevice ?? ""
     }
 }

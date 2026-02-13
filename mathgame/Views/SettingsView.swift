@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @State private var gameState = GameState.shared
+    @State private var syncManager = SyncManager.shared
     @Environment(\.colorScheme) private var colorScheme
     @State private var musicVolume: Double
     @State private var sfxVolume: Double
@@ -90,21 +91,21 @@ struct SettingsView: View {
                     .foregroundStyle(syncStatusColor)
             }
 
-            if let lastSync = CloudSyncManager.shared.lastSyncDate {
-                Text("Last synced: \(timeAgoString(from: lastSync))")
-                    .font(.caption)
-                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme).opacity(0.6))
-            }
+            // Info text about automatic sync
+            Text("Your progress syncs automatically across devices when signed into iCloud.")
+                .font(.caption)
+                .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme).opacity(0.6))
+                .multilineTextAlignment(.center)
 
-            // Sync Now button
+            // Refresh status button (re-checks iCloud status)
             Button(action: {
                 Task {
-                    await CloudSyncManager.shared.sync()
+                    await SyncManager.shared.checkICloudStatus()
                 }
             }) {
                 HStack(spacing: 6) {
                     Image(systemName: "arrow.clockwise")
-                    Text("Sync Now")
+                    Text("Refresh Status")
                 }
                 .font(.subheadline.bold())
                 .foregroundStyle(.white)
@@ -115,7 +116,6 @@ struct SettingsView: View {
                         .fill(Color.blue)
                 )
             }
-            .disabled(CloudSyncManager.shared.syncStatus == .syncing || !CloudSyncManager.shared.isICloudAvailable)
         }
         .padding()
         .background(
@@ -129,54 +129,56 @@ struct SettingsView: View {
     }
 
     private var syncStatusText: String {
-        switch CloudSyncManager.shared.syncStatus {
+        switch syncManager.state {
         case .unknown:
             return "Checking iCloud status..."
         case .syncing:
             return "Syncing..."
         case .synced:
             return "Up to date"
-        case .error(let msg):
-            return "Error: \(msg)"
-        case .disabled:
-            return "iCloud not available"
+        case .offline:
+            return "Offline - will sync when connected"
+        case .noAccount:
+            return "Sign in to iCloud to sync"
+        case .restricted:
+            return "iCloud restricted"
+        case .accountChanged:
+            return "Account changed"
         }
     }
 
     private var syncStatusIcon: String {
-        switch CloudSyncManager.shared.syncStatus {
+        switch syncManager.state {
         case .unknown:
             return "questionmark.circle"
         case .syncing:
             return "arrow.clockwise"
         case .synced:
             return "checkmark.circle.fill"
-        case .error:
+        case .offline:
+            return "wifi.slash"
+        case .noAccount:
+            return "person.crop.circle.badge.xmark"
+        case .restricted:
             return "exclamationmark.triangle.fill"
-        case .disabled:
-            return "xmark.circle.fill"
+        case .accountChanged:
+            return "person.icloud"
         }
     }
 
     private var syncStatusColor: Color {
-        switch CloudSyncManager.shared.syncStatus {
+        switch syncManager.state {
         case .unknown:
             return .gray
         case .syncing:
             return .blue
         case .synced:
             return .green
-        case .error:
+        case .offline:
+            return .orange
+        case .noAccount, .restricted, .accountChanged:
             return .red
-        case .disabled:
-            return .gray
         }
-    }
-
-    private func timeAgoString(from date: Date) -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: date, relativeTo: Date())
     }
 
     private var settingsPanel: some View {

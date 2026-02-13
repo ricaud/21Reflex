@@ -117,6 +117,11 @@ struct MenuView: View {
 
             // Setup persistent player reference
             setupPersistentPlayer()
+
+            // Check iCloud sync status
+            Task {
+                await SyncManager.shared.checkICloudStatus()
+            }
         }
     }
 

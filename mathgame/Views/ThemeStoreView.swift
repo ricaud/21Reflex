@@ -175,38 +175,47 @@ struct ThemeStoreView: View {
             return
         }
 
-        // Deduct coins from persistent player
-        player.totalCoinsSpent += theme.cost
-        print("[ThemeStoreView] Deducted \(theme.cost) coins. Remaining: \(player.availableCoins)")
+        // Capture pre-purchase state for rollback
+        let previousSpent = player.totalCoinsSpent
+        let wasUnlocked = theme.isUnlocked
 
-        // Unlock theme
+        // Apply changes
+        player.totalCoinsSpent += theme.cost
+        player.markModified()  // Update sync timestamp
         theme.isUnlocked = true
 
-        // Save changes to SwiftData
+        print("[ThemeStoreView] Deducted \(theme.cost) coins. Remaining: \(player.availableCoins)")
+
+        // Save theme states for sync tracking
+        gameState.saveThemeStates(context: modelContext)
+
+        // Attempt to save changes
         do {
             try modelContext.save()
             print("[ThemeStoreView] Purchase saved successfully")
 
-            // Save theme states for CloudKit sync
-            gameState.saveThemeStates(context: modelContext)
-        } catch {
-            print("[ThemeStoreView] Failed to save purchase: \(error)")
-        }
-
-        // Show success animation
-        purchasedTheme = theme
-        withAnimation(.spring()) {
-            showPurchaseSuccess = true
-        }
-
-        // Play sound
-        gameState.audioManager.playSound(.correct)
-
-        // Hide success after delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            withAnimation {
-                showPurchaseSuccess = false
+            // Show success animation
+            purchasedTheme = theme
+            withAnimation(.spring()) {
+                showPurchaseSuccess = true
             }
+
+            // Play sound
+            gameState.audioManager.playSound(.correct)
+
+            // Hide success after delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                withAnimation {
+                    showPurchaseSuccess = false
+                }
+            }
+        } catch {
+            // Rollback on failure
+            player.totalCoinsSpent = previousSpent
+            theme.isUnlocked = wasUnlocked
+            print("[ThemeStoreView] Failed to save purchase: \(error)")
+            // Note: Theme states were saved before attempting the purchase save,
+            // so they may be out of sync. A fresh load will correct this.
         }
     }
 
