@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import GoogleMobileAds
 
 @main
 struct mathgameApp: App {
@@ -63,6 +64,9 @@ struct mathgameApp: App {
         WindowGroup {
             MenuView()
                 .onAppear {
+                    // Initialize AdMob SDK
+                    AdManager.shared.initialize()
+
                     // Authenticate with Game Center on launch
                     GameCenterManager.shared.authenticate()
                 }

@@ -15,7 +15,6 @@ struct GameView: View {
     @State private var feedbackText = ""
     @State private var feedbackColor: Color = .green
     @State private var shakeOffset: CGFloat = 0
-    @State private var isMuted = false
     @State private var pointsEarned = 0
     @State private var showBonusAnimation = false
 
@@ -25,10 +24,8 @@ struct GameView: View {
             gameState.currentTheme.effectiveBgColor(colorScheme)
                 .ignoresSafeArea()
 
-            VStack(spacing: 16) {
+            VStack(spacing: 12) {
                 // Header
-                Spacer()
-                Spacer()
                 headerSection
 
                 // Timer bar (hidden in practice mode)
@@ -100,12 +97,14 @@ struct GameView: View {
                 answerButtonsSection
                     .padding(.top, 8)
 
-                // Controls
-                controlsSection
-                Spacer()
-                Spacer()
+
+                // Banner ad at bottom
+                BannerAdView(placement: .game)
+                    .frame(height: BannerAdView.bannerHeight)
+                    .frame(maxWidth: .infinity)
             }
-            .padding()
+            .padding(.horizontal)
+            .padding(.top)
 
             // Pause overlay
             if gameState.showPauseOverlay {
@@ -119,51 +118,28 @@ struct GameView: View {
         }
     }
 
-    private var controlsSection: some View {
-        HStack(spacing: 20) {
-            // Pause button
-            Button(action: { gameState.togglePause() }) {
-                Image(systemName: "pause.fill")
-                    .font(.title2)
-                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
-                    .frame(width: 50, height: 50)
-                    .background(gameState.currentTheme.effectiveButtonColor(colorScheme))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 2)
-                    )
-            }
-            .accessibilityLabel("Pause game")
-            .accessibilityHint("Opens pause menu")
-
-            // Mute button
-            Button(action: { isMuted.toggle() }) {
-                Image(systemName: isMuted ? "speaker.slash.fill" : "speaker.fill")
-                    .font(.title2)
-                    .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
-                    .frame(width: 50, height: 50)
-                    .background(gameState.currentTheme.effectiveButtonColor(colorScheme))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 2)
-                    )
-            }
-            .accessibilityLabel(isMuted ? "Unmute sound" : "Mute sound")
-            .accessibilityHint("Toggles game audio")
-        }
-        .padding(.top, 16)
-    }
-
     private var headerSection: some View {
         VStack(spacing: 12) {
 
             HStack(spacing: 12) {
-                // Mode indicator
+                // Mode indicator with pause button
                 Text("Blackjack")
                     .font(.caption.bold())
                     .foregroundStyle(Color(red: 0.2, green: 0.6, blue: 0.3))
+
+                // Pause button - small, to the right of "Blackjack"
+                Button(action: { gameState.togglePause() }) {
+                    Image(systemName: "pause.fill")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme).opacity(0.6))
+                        .frame(width: 24, height: 24)
+                        .background(
+                            Circle()
+                                .fill(gameState.currentTheme.effectiveButtonColor(colorScheme).opacity(0.3))
+                        )
+                }
+                .accessibilityLabel("Pause game")
+                .accessibilityHint("Opens pause menu")
 
                 Spacer()
 

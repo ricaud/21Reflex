@@ -61,11 +61,17 @@ struct MenuView: View {
                     Spacer()
 
                     // Bottom toolbar - always visible
-                    bottomToolbar.padding(.bottom)
+                    bottomToolbar
 
-                    //ads here 👹
+                    Spacer()
+                    // Banner ad at bottom
+                    BannerAdView(placement: .menu)
+                        .frame(height: BannerAdView.bannerHeight)
+                        .frame(maxWidth: .infinity)
 
                 }
+                .padding(.horizontal)
+                .padding(.top)
                 .padding()
             }
             .navigationDestination(for: GameState.Screen.self) { screen in

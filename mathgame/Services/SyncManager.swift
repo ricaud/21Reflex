@@ -6,7 +6,6 @@
 //
 
 import CloudKit
-import SwiftData
 import SwiftUI
 
 /// Monitors iCloud account status and provides sync state for UI
@@ -63,21 +62,27 @@ class SyncManager {
     var isICloudAvailable: Bool = false
 
     private let container = CKContainer.default()
+    nonisolated(unsafe) private var accountChangeTask: Task<Void, Never>?
 
     private init() {
-        setupNotifications()
+        observeAccountChanges()
         Task {
             await checkICloudStatus()
         }
     }
 
-    private func setupNotifications() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleAccountChange),
-            name: .CKAccountChanged,
-            object: nil
-        )
+    deinit {
+        accountChangeTask?.cancel()
+    }
+
+    private func observeAccountChanges() {
+        accountChangeTask = Task { [weak self] in
+            guard let self else { return }
+            for await _ in NotificationCenter.default.notifications(named: .CKAccountChanged) {
+                self.state = .accountChanged
+                await self.checkICloudStatus()
+            }
+        }
     }
 
     func checkICloudStatus() async {
@@ -110,10 +115,4 @@ class SyncManager {
         }
     }
 
-    @objc private func handleAccountChange() {
-        state = .accountChanged
-        Task {
-            await checkICloudStatus()
-        }
-    }
 }

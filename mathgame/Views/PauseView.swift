@@ -31,6 +31,26 @@ struct PauseView: View {
 
                 Spacer()
 
+                // Mute button
+                Button(action: {
+                    let newMutedValue = !gameState.audioManager.isMuted
+                    gameState.audioManager.setMuted(newMutedValue)
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: gameState.audioManager.isMuted ? "speaker.slash.fill" : "speaker.fill")
+                        Text(gameState.audioManager.isMuted ? "Sound Off" : "Sound On")
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.8))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .fill(Color.white.opacity(0.1))
+                    )
+                }
+                .padding(.bottom, 8)
+
                 // Menu buttons
                 VStack(spacing: 12) {
                     // Resume

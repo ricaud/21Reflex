@@ -6,6 +6,7 @@
 //
 
 import GameKit
+import UIKit
 
 @Observable
 @MainActor
@@ -54,6 +55,19 @@ class GameCenterManager {
 
     private init() {}
 
+    private func topViewController() -> UIViewController? {
+        let activeScene = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }
+
+        let root = activeScene?.windows.first(where: \.isKeyWindow)?.rootViewController
+        var current = root
+        while let presented = current?.presentedViewController {
+            current = presented
+        }
+        return current
+    }
+
     // MARK: - Authentication
 
     func authenticate() {
@@ -65,10 +79,9 @@ class GameCenterManager {
                 // Store reference for later presentation
                 self.authenticationError = "Please sign in to Game Center"
                 self.isAuthenticated = false
-                // The view controller should be presented by the app's root view controller
-                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                   let rootVC = windowScene.windows.first?.rootViewController {
-                    rootVC.present(viewController, animated: true)
+                if let presenter = self.topViewController(),
+                   presenter.presentedViewController == nil {
+                    presenter.present(viewController, animated: true)
                 }
             } else if let error = error {
                 self.authenticationError = error.localizedDescription

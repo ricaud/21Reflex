@@ -18,6 +18,8 @@ struct GameOverView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 24) {
+                Spacer()
+                
                 // Header
                 headerSection
 
@@ -26,8 +28,14 @@ struct GameOverView: View {
 
                 // Buttons
                 buttonsSection
+
+                // Banner ad at bottom
+                BannerAdView(placement: .gameOver)
+                    .frame(height: BannerAdView.bannerHeight)
+                    .frame(maxWidth: .infinity)
             }
-            .padding()
+            .padding(.horizontal)
+            .padding(.top)
             
         }
         .onAppear {

@@ -17,21 +17,29 @@ struct StatsView: View {
             gameState.currentTheme.effectiveBgColor(colorScheme)
                 .ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Header
-                    headerSection
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Header
+                        headerSection
 
-                    // Game Center section
-                    gameCenterSection
+                        // Game Center section
+                        gameCenterSection
 
-                    // Statistics grid
-                    statisticsSection
+                        // Statistics grid
+                        statisticsSection
 
-                    // Top scores section
-                    topScoresSection
+                        // Top scores section
+                        topScoresSection
+                    }
+                    .padding()
+                    .padding(.bottom, BannerAdView.bannerHeight) // Reserve space for banner
                 }
-                .padding()
+
+                // Banner ad at bottom
+                BannerAdView(placement: .stats)
+                    .frame(height: BannerAdView.bannerHeight)
+                    .frame(maxWidth: .infinity)
             }
         }
     }

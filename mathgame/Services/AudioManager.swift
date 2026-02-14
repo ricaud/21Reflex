@@ -78,6 +78,7 @@ class AudioManager {
 
     func setHapticsEnabled(_ enabled: Bool) {
         hapticsEnabled = enabled
+        GameState.shared.hapticManager.isEnabled = enabled
         GameState.shared.saveAudioSettings()
     }
 

@@ -68,14 +68,42 @@ Themes are unlocked by spending coins in `ThemeStoreView`. Equipped theme persis
 - **Persistence**: SwiftData with iCloud sync via CloudKit (configured in `mathgame.entitlements`).
 - **Audio**: `AudioManager` singleton with `.menu`, `.playing`, `.gameOver` music tracks.
 - **Timer**: Async/await based, auto-pauses on app background via `handleScenePhaseChange()`.
+- **Ads**: `AdManager` singleton with `BannerAdView` component for AdMob banner ads.
+
+### Advertising System
+
+**AdManager** (`Services/AdManager.swift`) manages Google AdMob integration:
+- Banner ads on MenuView, GameView, StatsView, and GameOverView
+- `isPremiumUser` flag to disable ads for future premium feature
+- Test ad unit IDs in debug builds, production IDs in release builds
+- Banner ad caching and refresh on orientation changes
+
+**Important**: BannerView requires an explicit frame set immediately after creation:
+```swift
+let bannerView = BannerView(frame: CGRect(x: 0, y: 0, width: screenWidth, height: bannerHeight))
+```
+Without this, AdMob returns "Invalid ad width or height" error.
+
+**BannerAdView** (`Components/BannerAdView.swift`) is the SwiftUI wrapper:
+- Uses `BannerView` from Google Mobile Ads SDK via `UIViewRepresentable`
+- Fixed height of 60pt, adapts to screen width
+- `.bannerAd(placement:)` view modifier for easy integration
+
+**Configuration**:
+- `GADApplicationIdentifier` in Info.plist (test ID: ca-app-pub-3940256099942544~1458002511)
+- SKAdNetwork identifiers configured for iOS 14+ attribution
+- Initialized in `mathgameApp.swift` on app launch
 
 ### View Structure
 
-- **MenuView**: Main menu with animated cards, coin balance, theme store access
+- **MenuView**: Main menu with animated cards, coin balance, theme store access, banner ad at bottom
 - **GameView**: Gameplay with cards, timer, answer buttons (6 buttons: 4 numeric + BUST + BLACKJACK)
-- **GameOverView**: Run stats, coins earned, accuracy, best streak
+  - Pause button: small (24x24), positioned next to "Blackjack" text in header
+  - Mute button: located in pause menu
+  - Banner ad at bottom
+- **GameOverView**: Run stats, coins earned, accuracy, best streak, banner ad at bottom
 - **ThemeStoreView**: Grid of themes with purchase/equip functionality
-- **StatsView**: Lifetime stats with Game Center leaderboards/achievements buttons
+- **StatsView**: Lifetime stats with Game Center leaderboards/achievements buttons, banner ad at bottom
 - **SettingsView**: Audio/haptic toggles
 
 ### Game Center Integration
@@ -134,13 +162,16 @@ mathgame/
 │   ├── PlayingCardView.swift   # Card visualization
 │   ├── ThickBorderButton.swift # Custom button style
 │   ├── TimerBar.swift          # Timer progress
-│   └── StreakBadge.swift       # Streak counter
+│   ├── StreakBadge.swift       # Streak counter
+│   ├── BannerAdView.swift      # AdMob banner wrapper
+│   └── HealthIndicator.swift   # Health hearts display
 └── Services/
     ├── GameState.swift         # Central state management
     ├── GameCenterManager.swift # Game Center integration
-    ├── CloudSyncManager.swift  # iCloud sync
+    ├── SyncManager.swift       # iCloud sync status
     ├── AudioManager.swift      # Audio playback
-    └── HapticManager.swift     # Haptic feedback
+    ├── HapticManager.swift     # Haptic feedback
+    └── AdManager.swift         # AdMob integration
 ```
 
 ### Testing Notes

@@ -115,6 +115,7 @@ class GameState {
         audioManager.musicVolume = pp.musicVolume
         audioManager.sfxVolume = pp.sfxVolume
         audioManager.hapticsEnabled = pp.hapticsEnabled
+        hapticManager.isEnabled = pp.hapticsEnabled
         audioManager.isMuted = pp.isMuted
 
         print("[GameState] Loaded audio settings - Music: \(pp.musicVolume), SFX: \(pp.sfxVolume), Haptics: \(pp.hapticsEnabled), Muted: \(pp.isMuted)")
