@@ -32,7 +32,7 @@ class AudioManager {
     // MARK: - Settings
     var musicVolume: Float = 0.7 {
         didSet {
-            backgroundPlayer?.volume = musicVolume
+            midiMusicEngine?.setVolume(musicVolume)
         }
     }
 
@@ -40,19 +40,22 @@ class AudioManager {
     var hapticsEnabled: Bool = true
     var isMuted: Bool = false {
         didSet {
-            backgroundPlayer?.volume = isMuted ? 0 : musicVolume
+            midiMusicEngine?.setMuted(isMuted)
         }
     }
 
     // MARK: - Players
-    private var backgroundPlayer: AVAudioPlayer?
     private var soundEffectPlayers: [SoundEffect: AVAudioPlayer] = [:]
     private var currentTrack: MusicTrack?
+
+    // MARK: - MIDI Music Engine
+    private var midiMusicEngine: MIDIMusicEngine?
 
     // MARK: - Initialization
     init() {
         setupAudioSession()
         generateSynthesizedSounds()
+        setupMIDIMusicEngine()
     }
 
     private func setupAudioSession() {
@@ -65,9 +68,16 @@ class AudioManager {
         }
     }
 
+    private func setupMIDIMusicEngine() {
+        midiMusicEngine = MIDIMusicEngine.shared
+        midiMusicEngine?.setVolume(musicVolume)
+        midiMusicEngine?.setMuted(isMuted)
+    }
+
     // MARK: - Volume Setters
     func setMusicVolume(_ volume: Float) {
         musicVolume = volume
+        midiMusicEngine?.setVolume(volume)
         GameState.shared.saveAudioSettings()
     }
 
@@ -84,6 +94,7 @@ class AudioManager {
 
     func setMuted(_ muted: Bool) {
         isMuted = muted
+        midiMusicEngine?.setMuted(muted)
         GameState.shared.saveAudioSettings()
     }
 
@@ -104,28 +115,15 @@ class AudioManager {
         guard currentTrack != track else { return }
         currentTrack = track
 
-        guard !isMuted, musicVolume > 0 else {
-            backgroundPlayer?.stop()
-            return
-        }
-
-        // Generate or load track
-        let player = generateMusicTrack(track)
-        player?.volume = musicVolume
-        player?.numberOfLoops = -1 // Loop forever
-        player?.play()
-
-        backgroundPlayer?.stop()
-        backgroundPlayer = player
+        midiMusicEngine?.playMusic(track)
     }
 
     func pauseMusic() {
-        backgroundPlayer?.pause()
+        midiMusicEngine?.pauseMusic()
     }
 
     func resumeMusic() {
-        guard !isMuted, musicVolume > 0 else { return }
-        backgroundPlayer?.play()
+        midiMusicEngine?.resumeMusic()
     }
 
     func prepare() {
@@ -134,7 +132,7 @@ class AudioManager {
     }
 
     func stopMusic() {
-        backgroundPlayer?.stop()
+        midiMusicEngine?.stopMusic()
         currentTrack = nil
     }
 

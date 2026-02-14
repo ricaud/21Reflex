@@ -67,6 +67,7 @@ Themes are unlocked by spending coins in `ThemeStoreView`. Equipped theme persis
 - **Color Scheme**: All views use `@Environment(\.colorScheme)` and theme's `effective*Color()` methods.
 - **Persistence**: SwiftData with iCloud sync via CloudKit (configured in `mathgame.entitlements`).
 - **Audio**: `AudioManager` singleton with `.menu`, `.playing`, `.gameOver` music tracks.
+- **Music**: `MIDIMusicEngine` generates jazzy MIDI loops programmatically using `AVMIDIPlayer`.
 - **Timer**: Async/await based, auto-pauses on app background via `handleScenePhaseChange()`.
 - **Ads**: `AdManager` singleton with `BannerAdView` component for AdMob banner ads.
 
@@ -93,6 +94,28 @@ Without this, AdMob returns "Invalid ad width or height" error.
 - `GADApplicationIdentifier` in Info.plist (test ID: ca-app-pub-3940256099942544~1458002511)
 - SKAdNetwork identifiers configured for iOS 14+ attribution
 - Initialized in `mathgameApp.swift` on app launch
+
+### MIDI Music System
+
+**MIDIMusicEngine** (`Services/MIDIMusicEngine.swift`) generates and plays jazzy MIDI music:
+- Generates MIDI data programmatically using `SimpleMIDIComposer`
+- Uses `AVMIDIPlayer` for playback (no external dependencies)
+- Three music tracks: menu (relaxed jazz), playing (upbeat swing), gameOver (mellow ballad)
+- 20-30 second seamless loops with automatic looping
+
+**Music Generation** (`SimpleMIDIComposer` within `MIDIMusicEngine.swift`):
+- Creates raw MIDI file data programmatically
+- Jazz chord progressions (ii-V-I turnarounds)
+- Multiple channels: chords (ch 0), bass (ch 1), drums (ch 9)
+- Program changes for instrument selection
+
+**AudioManager Integration**:
+- `AudioManager` delegates music playback to `MIDIMusicEngine`
+- Sound effects remain synthesized via `AVAudioPlayer`
+- Volume/mute controls apply to both systems
+
+**Future Theme Support**:
+Each theme can optionally provide custom MIDI by implementing music generation. Currently uses default jazzy compositions for all themes.
 
 ### View Structure
 
@@ -171,7 +194,8 @@ mathgame/
     ├── SyncManager.swift       # iCloud sync status
     ├── AudioManager.swift      # Audio playback
     ├── HapticManager.swift     # Haptic feedback
-    └── AdManager.swift         # AdMob integration
+    ├── AdManager.swift         # AdMob integration
+    └── MIDIMusicEngine.swift   # MIDI music generation
 ```
 
 ### Testing Notes
