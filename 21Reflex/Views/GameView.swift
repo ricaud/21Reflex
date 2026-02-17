@@ -232,11 +232,11 @@ struct GameView: View {
         }
 
         return VStack(spacing: 16) {
-            // Numeric options in 2x2 grid
-            numericButtonsGrid(options: numericOptions, isTimerExpired: isTimerExpired)
-
             // Special buttons (Bust and Blackjack) - full width horizontal
             specialButtonsRow(options: specialOptions, isTimerExpired: isTimerExpired)
+            
+            // Numeric options in 2x2 grid
+            numericButtonsGrid(options: numericOptions, isTimerExpired: isTimerExpired)
         }
     }
 
