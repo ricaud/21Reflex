@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import GoogleMobileAds
+import StoreKit
 
 @main
 struct TwentyOneReflexApp: App {
@@ -69,6 +70,11 @@ struct TwentyOneReflexApp: App {
 
                     // Authenticate with Game Center on launch
                     GameCenterManager.shared.authenticate()
+
+                    // Check IAP entitlements on launch
+                    Task {
+                        await IAPManager.shared.checkEntitlements()
+                    }
                 }
         }
         .modelContainer(sharedModelContainer)

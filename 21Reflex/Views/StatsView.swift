@@ -9,6 +9,7 @@ import SwiftUI
 
 struct StatsView: View {
     @State private var gameState = GameState.shared
+    @StateObject private var adManager = AdManager.shared
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -33,13 +34,15 @@ struct StatsView: View {
                         topScoresSection
                     }
                     .padding()
-                    .padding(.bottom, BannerAdView.bannerHeight) // Reserve space for banner
+                    .padding(.bottom, adManager.isPremiumUser ? 0 : BannerAdView.bannerHeight)
                 }
 
-                // Banner ad at bottom
-                BannerAdView(placement: .stats)
-                    .frame(height: BannerAdView.bannerHeight)
-                    .frame(maxWidth: .infinity)
+                // Banner ad at bottom (only for non-premium users)
+                if !adManager.isPremiumUser {
+                    BannerAdView(placement: .stats)
+                        .frame(height: BannerAdView.bannerHeight)
+                        .frame(maxWidth: .infinity)
+                }
             }
         }
     }

@@ -20,6 +20,18 @@ class AdManager: NSObject, ObservableObject {
     /// Set to true to disable ads (e.g., for premium users)
     @Published var isPremiumUser: Bool = false
 
+    /// Set premium user status (called from IAPManager)
+    func setPremiumUser(_ premium: Bool) {
+        isPremiumUser = premium
+        if premium {
+            // Remove all cached banner ads
+            for placement in AdPlacement.allCases {
+                removeBannerAd(for: placement)
+            }
+            print("[AdManager] Premium user - all ads disabled")
+        }
+    }
+
     /// Test ad unit IDs from Google
     private let testBannerAdUnitID = "ca-app-pub-3940256099942544/2934735716"
 

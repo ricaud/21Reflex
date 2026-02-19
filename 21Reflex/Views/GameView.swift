@@ -9,6 +9,7 @@ import SwiftUI
 
 struct GameView: View {
     @State private var gameState = GameState.shared
+    @StateObject private var adManager = AdManager.shared
     @Environment(\.colorScheme) private var colorScheme
     @State private var selectedAnswer: BlackjackSession.AnswerOption?
     @State private var showFeedback = false
@@ -98,10 +99,12 @@ struct GameView: View {
                     .padding(.top, 8)
 
 
-                // Banner ad at bottom
-                BannerAdView(placement: .game)
-                    .frame(height: BannerAdView.bannerHeight)
-                    .frame(maxWidth: .infinity)
+                // Banner ad at bottom (only for non-premium users)
+                if !adManager.isPremiumUser {
+                    BannerAdView(placement: .game)
+                        .frame(height: BannerAdView.bannerHeight)
+                        .frame(maxWidth: .infinity)
+                }
             }
             .padding(.horizontal)
             .padding(.top)

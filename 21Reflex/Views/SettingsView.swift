@@ -6,13 +6,19 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SettingsView: View {
     @State private var gameState = GameState.shared
     @State private var syncManager = SyncManager.shared
+    @State private var iapManager = IAPManager.shared
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.modelContext) private var modelContext
+    @Query private var persistentPlayers: [PersistentPlayer]
     @State private var sfxVolume: Double
     @State private var hapticsEnabled: Bool
+    @State private var showRestoreSuccess = false
+    @State private var showRestoreError = false
 
     init() {
         let audioManager = GameState.shared.audioManager
@@ -36,6 +42,9 @@ struct SettingsView: View {
 
                     // Settings panel
                     settingsPanel
+
+                    // IAP Section
+                    iapSection
 
                     // Test buttons
                     testSection
@@ -253,6 +262,128 @@ struct SettingsView: View {
             Slider(value: volume, in: 0...1, step: 0.1)
                 .tint(gameState.currentTheme.effectiveAccentColor(colorScheme))
         }
+    }
+
+    private var iapSection: some View {
+        VStack(spacing: 16) {
+            HStack(spacing: 12) {
+                Image(systemName: "bag.fill")
+                    .font(.title2)
+                    .foregroundStyle(.orange)
+                    .frame(width: 30)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Purchases")
+                        .font(.headline)
+                        .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme))
+
+                    if iapManager.hasRemovedAds {
+                        Text("Premium active - Thank you!")
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                    } else {
+                        Text("Restore previous purchases")
+                            .font(.caption)
+                            .foregroundStyle(gameState.currentTheme.effectiveTextColor(colorScheme).opacity(0.6))
+                    }
+                }
+
+                Spacer()
+            }
+
+            // Restore Purchases button
+            Button(action: {
+                Task {
+                    await iapManager.restorePurchases()
+                    if iapManager.hasRemovedAds {
+                        // Save premium status to PersistentPlayer for CloudKit sync
+                        if let player = persistentPlayers.first {
+                            player.isPremiumUser = true
+                            player.markModified()
+                            try? modelContext.save()
+                        }
+
+                        showRestoreSuccess = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            showRestoreSuccess = false
+                        }
+                    } else if !iapManager.showError {
+                        // If restore completed but no purchases found
+                        showRestoreError = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            showRestoreError = false
+                        }
+                    }
+                }
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.counterclockwise")
+                    Text("Restore Purchases")
+                        .font(.subheadline.bold())
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.orange)
+                )
+            }
+            .disabled(iapManager.isLoading)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(gameState.currentTheme.effectiveButtonColor(colorScheme))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(gameState.currentTheme.effectiveBorderColor(colorScheme), lineWidth: 4)
+        )
+        .overlay {
+            if showRestoreSuccess {
+                restoreSuccessOverlay
+            }
+            if showRestoreError {
+                restoreErrorOverlay
+            }
+        }
+    }
+
+    private var restoreSuccessOverlay: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(.green)
+
+            Text("Purchases Restored")
+                .font(.headline.bold())
+                .foregroundStyle(.white)
+        }
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.black.opacity(0.8))
+        )
+        .transition(.scale.combined(with: .opacity))
+    }
+
+    private var restoreErrorOverlay: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.circle.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(.orange)
+
+            Text("No Purchases Found")
+                .font(.headline.bold())
+                .foregroundStyle(.white)
+        }
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.black.opacity(0.8))
+        )
+        .transition(.scale.combined(with: .opacity))
     }
 
     private var testSection: some View {

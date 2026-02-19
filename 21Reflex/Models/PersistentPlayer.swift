@@ -33,6 +33,9 @@ class PersistentPlayer {
     // Theme settings
     var equippedThemeID: String = "classic"
 
+    // IAP - Premium status
+    var isPremiumUser: Bool = false
+
     // Additional high scores (from HighScores struct)
     var mostCoinsInRun: Int = 0
 
@@ -97,6 +100,7 @@ class PersistentPlayer {
         sfxVolume: Float = 0.8,
         hapticsEnabled: Bool = true,
         equippedThemeID: String = "classic",
+        isPremiumUser: Bool = false,
         mostCoinsInRun: Int = 0,
         topScores: [Int] = [],
         isMuted: Bool = false,
@@ -121,6 +125,7 @@ class PersistentPlayer {
         self.sfxVolume = sfxVolume
         self.hapticsEnabled = hapticsEnabled
         self.equippedThemeID = equippedThemeID
+        self.isPremiumUser = isPremiumUser
         self.mostCoinsInRun = mostCoinsInRun
         self.topScores = topScores
         self.isMuted = isMuted
