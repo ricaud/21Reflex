@@ -27,6 +27,8 @@ struct MenuView: View {
     @State private var aceDealt = false
     @State private var floatingOffset: CGFloat = 0
 
+    @StateObject private var adManager = AdManager.shared
+
     // Card models
     let kingOfHearts = Card(suit: .hearts, rank: .king)
     let aceOfSpades = Card(suit: .spades, rank: .ace)
@@ -64,10 +66,13 @@ struct MenuView: View {
                     bottomToolbar
 
                     Spacer()
-                    // Banner ad at bottom
-                    BannerAdView(placement: .menu)
-                        .frame(height: BannerAdView.bannerHeight)
-                        .frame(maxWidth: .infinity)
+
+                    // Banner ad at bottom (only for non-premium users)
+                    if !adManager.isPremiumUser {
+                        BannerAdView(placement: .menu)
+                            .frame(height: BannerAdView.bannerHeight)
+                            .frame(maxWidth: .infinity)
+                    }
 
                 }
                 .padding(.horizontal)
@@ -86,8 +91,8 @@ struct MenuView: View {
                         SettingsView()
                     case .help:
                         HelpView()
-                    case .themes:
-                        ThemeStoreView()
+                    case .store:
+                        StoreView()
                     case .leaderboards:
                         LeaderboardsView()
                     case .achievements:
@@ -141,7 +146,10 @@ struct MenuView: View {
             // Load complete state including top scores and theme states
             gameState.loadCompleteState(context: modelContext)
 
-            print("[MenuView] Using existing persistent player. Coins: \(player.availableCoins)")
+            // Sync premium status from CloudKit/SwiftData to IAPManager
+            IAPManager.shared.syncPremiumStatusFromPersistentPlayer(player)
+
+            print("[MenuView] Using existing persistent player. Coins: \(player.availableCoins), Premium: \(player.isPremiumUser)")
         } else {
             // Create new persistent player
             let newPlayer = PersistentPlayer()
@@ -272,8 +280,8 @@ struct MenuView: View {
                 gameState.navigate(to: .stats)
             })
 
-            toolbarButton(title: "THEMES", icon: "paintbrush.fill", action: {
-                gameState.navigate(to: .themes)
+            toolbarButton(title: "STORE", icon: "bag.fill", action: {
+                gameState.navigate(to: .store)
             })
 
             toolbarButton(title: "SETTINGS", icon: "gear", action: {

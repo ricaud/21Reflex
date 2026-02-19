@@ -15,13 +15,20 @@ struct BannerAdView: UIViewRepresentable {
     /// Fixed banner height (adaptive banners adjust width, height is typically 50-90pt)
     static let bannerHeight: CGFloat = 60
 
+    @StateObject private var adManager = AdManager.shared
+
     func makeUIView(context: Context) -> UIView {
         // Create container view
         let containerView = UIView()
         containerView.backgroundColor = .clear
 
+        // Don't show ad if user is premium
+        guard !adManager.isPremiumUser else {
+            return containerView
+        }
+
         // Get the banner ad from AdManager
-        let bannerView = AdManager.shared.getBannerAd(for: placement)
+        let bannerView = adManager.getBannerAd(for: placement)
 
         // Add banner to container
         bannerView.translatesAutoresizingMaskIntoConstraints = false
@@ -41,8 +48,11 @@ struct BannerAdView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {
+        // Don't refresh if user is premium
+        guard !adManager.isPremiumUser else { return }
+
         // Refresh the banner ad when view updates (e.g., on orientation change)
-        AdManager.shared.refreshBannerAd(for: placement)
+        adManager.refreshBannerAd(for: placement)
     }
 
     /// Get the appropriate frame for the banner based on current screen size
@@ -59,14 +69,17 @@ struct BannerAdView: UIViewRepresentable {
 /// View modifier that adds a banner ad at the bottom of a view
 struct BottomBannerAd: ViewModifier {
     let placement: AdPlacement
+    @StateObject private var adManager = AdManager.shared
 
     func body(content: Content) -> some View {
         VStack(spacing: 0) {
             content
-            BannerAdView(placement: placement)
-                .frame(height: BannerAdView.bannerHeight)
-                .frame(maxWidth: .infinity)
-                .background(Color.clear)
+            if !adManager.isPremiumUser {
+                BannerAdView(placement: placement)
+                    .frame(height: BannerAdView.bannerHeight)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.clear)
+            }
         }
     }
 }

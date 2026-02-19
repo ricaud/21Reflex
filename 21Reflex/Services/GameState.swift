@@ -21,7 +21,7 @@ class GameState {
         case stats
         case settings
         case help
-        case themes
+        case store
         case leaderboards
         case achievements
     }

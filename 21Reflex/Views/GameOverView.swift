@@ -9,6 +9,7 @@ import SwiftUI
 
 struct GameOverView: View {
     @State private var gameState = GameState.shared
+    @StateObject private var adManager = AdManager.shared
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -19,7 +20,7 @@ struct GameOverView: View {
 
             VStack(spacing: 24) {
                 Spacer()
-                
+
                 // Header
                 headerSection
 
@@ -29,14 +30,16 @@ struct GameOverView: View {
                 // Buttons
                 buttonsSection
 
-                // Banner ad at bottom
-                BannerAdView(placement: .gameOver)
-                    .frame(height: BannerAdView.bannerHeight)
-                    .frame(maxWidth: .infinity)
+                // Banner ad at bottom (only for non-premium users)
+                if !adManager.isPremiumUser {
+                    BannerAdView(placement: .gameOver)
+                        .frame(height: BannerAdView.bannerHeight)
+                        .frame(maxWidth: .infinity)
+                }
             }
             .padding(.horizontal)
             .padding(.top)
-            
+
         }
         .navigationBarBackButtonHidden(true)
         .ignoresSafeArea(.container, edges: .top)
