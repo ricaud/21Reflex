@@ -32,19 +32,13 @@ class AdManager: NSObject, ObservableObject {
         }
     }
 
-    /// Test ad unit IDs from Google
-    private let testBannerAdUnitID = "ca-app-pub-3940256099942544/2934735716"
-
     /// Production ad unit ID - replace with your actual ID before release
-    private let productionBannerAdUnitID = "ca-app-pub-3940256099942544/2934735716" // TODO: Replace with production ID
+    private let productionBannerAdUnitID = "ca-app-pub-5453898577102239/9500914327"
+    
 
     /// Current ad unit ID based on build configuration
     var bannerAdUnitID: String {
-        #if DEBUG
-        return testBannerAdUnitID
-        #else
         return productionBannerAdUnitID
-        #endif
     }
 
     // MARK: - State

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>21Reflex.ipa</key>
+	<array>
+		<dict>
+			<key>architectures</key>
+			<array>
+				<string>arm64</string>
+			</array>
+			<key>buildNumber</key>
+			<string>1</string>
+			<key>certificate</key>
+			<dict>
+				<key>SHA1</key>
+				<string>44DEEB71A62AFD2267D4E63B1108608B79968723</string>
+				<key>dateExpires</key>
+				<string>2/16/27</string>
+				<key>type</key>
+				<string>Cloud Managed Apple Distribution</string>
+			</dict>
+			<key>embeddedBinaries</key>
+			<array>
+				<dict>
+					<key>architectures</key>
+					<array>
+						<string>arm64</string>
+					</array>
+					<key>buildNumber</key>
+					<string>1300</string>
+					<key>certificate</key>
+					<dict>
+						<key>SHA1</key>
+						<string>44DEEB71A62AFD2267D4E63B1108608B79968723</string>
+						<key>dateExpires</key>
+						<string>2/16/27</string>
+						<key>type</key>
+						<string>Cloud Managed Apple Distribution</string>
+					</dict>
+					<key>name</key>
+					<string>GoogleMobileAds.framework</string>
+					<key>team</key>
+					<dict>
+						<key>id</key>
+						<string>8AXB662FQP</string>
+						<key>name</key>
+						<string>David Alexander Ricaud</string>
+					</dict>
+					<key>versionNumber</key>
+					<string>13.0.0</string>
+				</dict>
+				<dict>
+					<key>architectures</key>
+					<array>
+						<string>arm64</string>
+					</array>
+					<key>buildNumber</key>
+					<string>1</string>
+					<key>certificate</key>
+					<dict>
+						<key>SHA1</key>
+						<string>44DEEB71A62AFD2267D4E63B1108608B79968723</string>
+						<key>dateExpires</key>
+						<string>2/16/27</string>
+						<key>type</key>
+						<string>Cloud Managed Apple Distribution</string>
+					</dict>
+					<key>name</key>
+					<string>UserMessagingPlatform.framework</string>
+					<key>team</key>
+					<dict>
+						<key>id</key>
+						<string>8AXB662FQP</string>
+						<key>name</key>
+						<string>David Alexander Ricaud</string>
+					</dict>
+					<key>versionNumber</key>
+					<string>3.1.0</string>
+				</dict>
+			</array>
+			<key>entitlements</key>
+			<dict>
+				<key>application-identifier</key>
+				<string>8AXB662FQP.com.ricaud.21reflex</string>
+				<key>com.apple.developer.game-center</key>
+				<true/>
+				<key>com.apple.developer.icloud-container-environment</key>
+				<string>Production</string>
+				<key>com.apple.developer.icloud-container-identifiers</key>
+				<array>
+					<string>iCloud.com.ricaud.21reflex</string>
+				</array>
+				<key>com.apple.developer.icloud-services</key>
+				<array>
+					<string>CloudKit</string>
+				</array>
+				<key>com.apple.developer.team-identifier</key>
+				<string>8AXB662FQP</string>
+				<key>get-task-allow</key>
+				<false/>
+			</dict>
+			<key>name</key>
+			<string>21Reflex.app</string>
+			<key>profile</key>
+			<dict>
+				<key>UUID</key>
+				<string>95e91c0c-6a75-4559-9d62-528d11433e38</string>
+				<key>dateExpires</key>
+				<string>2/16/27</string>
+				<key>name</key>
+				<string>iOS Team Ad Hoc Provisioning Profile: com.ricaud.21reflex</string>
+			</dict>
+			<key>team</key>
+			<dict>
+				<key>id</key>
+				<string>8AXB662FQP</string>
+				<key>name</key>
+				<string>David Alexander Ricaud</string>
+			</dict>
+			<key>versionNumber</key>
+			<string>1.0</string>
+		</dict>
+	</array>
+</dict>
+</plist>
