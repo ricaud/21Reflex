@@ -8,10 +8,10 @@
 import SwiftUI
 
 enum Suit: String, CaseIterable {
-    case hearts = "♥️"
-    case diamonds = "♦️"
-    case clubs = "♣️"
-    case spades = "♠️"
+    case hearts = "♥"
+    case diamonds = "♦"
+    case clubs = "♣"
+    case spades = "♠"
 
     var color: Color {
         switch self {
