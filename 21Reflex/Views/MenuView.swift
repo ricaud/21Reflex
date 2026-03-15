@@ -57,6 +57,9 @@ struct MenuView: View {
                     // Play button - always visible
                     playButtonSection
 
+                    // Story Mode button
+                    storyModeButtonSection
+
                     // Practice button - always visible
                     practiceButtonSection
 
@@ -81,24 +84,30 @@ struct MenuView: View {
             }
             .navigationDestination(for: GameState.Screen.self) { screen in
                 switch screen {
-                    case .game:
-                        GameView()
-                    case .gameOver:
-                        GameOverView()
-                    case .stats:
-                        StatsView()
-                    case .settings:
-                        SettingsView()
-                    case .help:
-                        HelpView()
-                    case .store:
-                        StoreView()
-                    case .leaderboards:
-                        LeaderboardsView()
-                    case .achievements:
-                        AchievementsView()
-                    case .menu:
-                        EmptyView()
+                case .game:
+                    GameView()
+                case .gameOver:
+                    GameOverView()
+                case .stats:
+                    StatsView()
+                case .settings:
+                    SettingsView()
+                case .help:
+                    HelpView()
+                case .store:
+                    StoreView()
+                case .leaderboards:
+                    LeaderboardsView()
+                case .achievements:
+                    AchievementsView()
+                case .menu:
+                    EmptyView()
+                case .storyMenu:
+                    StoryContainerView()
+                        .environment(StoryState.shared)
+                case .storyGame, .storySummary, .storyUpgrades:
+                    // These should never be pushed directly - they're handled internally by StoryContainerView
+                    EmptyView()
                 }
             }
         }
@@ -244,7 +253,7 @@ struct MenuView: View {
 
     private var playButtonSection: some View {
         ThickBorderButton(
-            title: "PLAY",
+            title: "QUICK PLAY",
             action: { gameState.startGame() },
             bgColor: Color(red: 0.2, green: 0.6, blue: 0.3),
             textColor: .white,
@@ -253,9 +262,25 @@ struct MenuView: View {
             shadowOffset: 4,
             cornerRadius: 10
         )
-        .frame(height: 60)
-        .accessibilityLabel("Play Blackjack")
-        .accessibilityHint("Start a new blackjack card counting game")
+        .frame(height: 55)
+        .accessibilityLabel("Quick Play")
+        .accessibilityHint("Start a quick blackjack card counting game")
+    }
+
+    private var storyModeButtonSection: some View {
+        ThickBorderButton(
+            title: "STORY MODE",
+            action: { gameState.enterStoryMode() },
+            bgColor: Color(red: 0.4, green: 0.3, blue: 0.6),
+            textColor: .white,
+            borderColor: gameState.currentTheme.effectiveBorderColor(colorScheme),
+            borderWidth: 3,
+            shadowOffset: 3,
+            cornerRadius: 10
+        )
+        .frame(height: 50)
+        .accessibilityLabel("Story Mode")
+        .accessibilityHint("Play the story campaign")
     }
 
     private var practiceButtonSection: some View {

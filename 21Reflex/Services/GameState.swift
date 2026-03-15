@@ -24,7 +24,15 @@ class GameState {
         case store
         case leaderboards
         case achievements
+        // Story Mode
+        case storyMenu
+        case storyGame(night: Int)
+        case storySummary(result: NightResult)
+        case storyUpgrades
     }
+
+    // MARK: - Story Mode State
+    var isStoryMode: Bool = false
 
     var navigationPath: [Screen] = []
     var currentScreen: Screen = .menu
@@ -451,5 +459,25 @@ class GameState {
 
     func closeSettingsFromPause() {
         showSettingsInPause = false
+    }
+
+    // MARK: - Story Mode
+
+    func enterStoryMode() {
+        isStoryMode = true
+
+        // Ensure StoryProgress is loaded
+        if let context = modelContext {
+            StoryState.shared.loadProgress(context: context)
+        }
+
+        navigate(to: .storyMenu)
+    }
+
+    func exitStoryMode() {
+        isStoryMode = false
+        StoryState.shared.isInStoryMode = false
+        StoryState.shared.currentSession = nil
+        returnToMenu()
     }
 }

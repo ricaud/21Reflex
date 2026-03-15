@@ -19,44 +19,32 @@ struct TwentyOneReflexApp: App {
             PersistentPlayer.self,
             Theme.self,
             ThemeState.self,
+            StoryProgress.self,
+            NightHistory.self,
         ])
 
         // Configure for CloudKit sync (private database)
-        let cloudKitConfig = ModelConfiguration(
+        let config = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: false,
             cloudKitDatabase: .private("iCloud.com.ricaud.21reflex")
         )
 
         do {
-            // Try CloudKit-enabled storage first
-            let container = try ModelContainer(for: schema, configurations: [cloudKitConfig])
-            print("[21ReflexApp] Successfully created CloudKit ModelContainer")
+            let container = try ModelContainer(for: schema, configurations: [config])
+            print("[21ReflexApp] Successfully created ModelContainer")
             return container
         } catch {
-            print("[21ReflexApp] Failed to create CloudKit ModelContainer: \(error)")
-            print("[21ReflexApp] Falling back to local storage (no sync)")
+            print("[21ReflexApp] Failed to create ModelContainer: \(error)")
 
-            // Fallback to local storage (works in simulator without iCloud)
-            let localConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+            // Fallback to in-memory only
+            let fallbackConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
             do {
-                let container = try ModelContainer(for: schema, configurations: [localConfig])
-                print("[21ReflexApp] Successfully created local ModelContainer")
+                let container = try ModelContainer(for: schema, configurations: [fallbackConfig])
+                print("[21ReflexApp] Using in-memory ModelContainer")
                 return container
             } catch {
-                print("[21ReflexApp] Failed to create local ModelContainer: \(error)")
-                print("[21ReflexApp] Falling back to in-memory storage")
-
-                // Final fallback to in-memory
-                let fallbackConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-                do {
-                    let container = try ModelContainer(for: schema, configurations: [fallbackConfig])
-                    print("[21ReflexApp] Successfully created in-memory ModelContainer")
-                    return container
-                } catch {
-                    // Only crash if even in-memory fails (critical system issue)
-                    fatalError("Critical: Cannot create any ModelContainer: \(error)")
-                }
+                fatalError("Critical: Cannot create ModelContainer: \(error)")
             }
         }
     }()
